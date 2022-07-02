@@ -7,7 +7,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeab
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 import "../interfaces/IFactory.sol";
-import "../interfaces/IShop.sol";
+import "../interfaces/IAuction.sol";
 import "../interfaces/IDao.sol";
 import "../interfaces/IPrivateExitModule.sol";
 
@@ -16,7 +16,7 @@ contract LaunchpadModule is OwnableUpgradeable {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
     IFactory public factory;
-    IShop public shop;
+    IAuction public auction;
     IPrivateExitModule public privateExitModule;
 
     struct Sale {
@@ -75,18 +75,17 @@ contract LaunchpadModule is OwnableUpgradeable {
 
     function setCoreAddresses(
         IFactory _factory,
-        IShop _shop,
+        IAuction _auction,
         IPrivateExitModule _privateExitModule
     ) external onlyOwner {
         factory = _factory;
-        shop = _shop;
+        auction = _auction;
         privateExitModule = _privateExitModule;
     }
 
     modifier onlyDao() {
         require(
-            factory.containsDao(msg.sender),
-            "LaunchpadModule: only for DAOs"
+            factory.containsDao(msg.sender), "LaunchpadModule: only for DAOs"
         );
         _;
     }
@@ -140,8 +139,8 @@ contract LaunchpadModule is OwnableUpgradeable {
         );
     }
 
-    function fillLpBalance(address _dao, uint256 _id) external {
-        require(shop.buyPrivateOffer(_dao, _id));
+    function fillGovTokenBalance(address _dao, uint256 _id) external {
+        require(auction.buyPrivateOffer(_dao, _id));
     }
 
     function closeSale() external onlyDao {
@@ -150,17 +149,17 @@ contract LaunchpadModule is OwnableUpgradeable {
         emit CloseSale(msg.sender, saleIndexes[msg.sender] - 1);
     }
 
-    function burnLp(address _dao, uint256 _id) external {
-        require(factory.containsDao(_dao), "LaunchpadModule: only for DAOs");
+    // function burnGovToken(address _dao, uint256 _id) external {
+    //     require(factory.containsDao(_dao), "LaunchpadModule: only for DAOs");
 
-        IERC20Upgradeable lp = IERC20Upgradeable(IDao(_dao).lp());
+    //     IERC20Upgradeable lp = IERC20Upgradeable(IDao(_dao).govToken());
 
-        require(
-            lp.approve(address(privateExitModule), lp.balanceOf(address(this)))
-        );
+    //     require(
+    //         lp.approve(address(privateExitModule), lp.balanceOf(address(this)))
+    //     );
 
-        require(privateExitModule.privateExit(_dao, _id));
-    }
+    //     require(privateExitModule.privateExit(_dao, _id));
+    // }
 
     function buy(address _dao, uint256 _currencyAmount) external {
         uint256 saleIndex = saleIndexes[_dao];
@@ -214,7 +213,7 @@ contract LaunchpadModule is OwnableUpgradeable {
 
         uint256 lpAmount = (currencyAmount * 1 ether) / sale.rate;
 
-        IERC20Upgradeable(IDao(_dao).lp()).safeTransfer(msg.sender, lpAmount);
+        IERC20Upgradeable(IDao(_dao).govToken()).safeTransfer(msg.sender, lpAmount);
 
         emit Buy(_dao, saleIndex, msg.sender, currencyAmount, lpAmount);
     }

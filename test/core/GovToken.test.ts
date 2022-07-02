@@ -10,17 +10,17 @@ import {
   Dao__factory,
   Factory,
   Factory__factory,
-  LP,
-  LP__factory,
-  Shop,
-  Shop__factory,
+  GovToken,
+  GovToken__factory,
+  Auction,
+  Auction__factory,
   Token,
   Token__factory
 } from '../../typechain-types'
 import { createData, createTxHash } from '../utils'
 
-describe('LP', () => {
-  let shop: Shop
+describe('GovToken', () => {
+  let auction: Auction
 
   let factory: Factory
 
@@ -28,7 +28,7 @@ describe('LP', () => {
 
   let dao: Dao
 
-  let lp: LP
+  let lp: GovToken
 
   let signers: SignerWithAddress[]
 
@@ -41,18 +41,17 @@ describe('LP', () => {
 
     token = await new Token__factory(signers[0]).deploy()
 
-    shop = await new Shop__factory(signers[0]).deploy()
+    auction = await new Auction__factory(signers[0]).deploy()
 
-    factory = await new Factory__factory(signers[0]).deploy(
-      shop.address,
-      token.address
-    )
+    factory = await new Factory__factory(signers[0]).deploy(token.address)
 
-    await shop.setFactory(factory.address)
+    await auction.setFactory(factory.address)
+
+    await factory.setupAuction(auction.address)
 
     const DAO_CONFIG = {
-      daoName: 'EgorDAO',
-      daoSymbol: 'EDAO',
+      daoName: 'TestDAO',
+      daoSymbol: 'TDAO',
       quorum: 51,
       partners: [ownerAddress],
       shares: [10]
@@ -69,14 +68,14 @@ describe('LP', () => {
     dao = Dao__factory.connect(await factory.daoAt(0), signers[0])
   })
 
-  it('Deploy LP, Change Mintable/Burnable and Freeze Them', async () => {
-    expect(await dao.lp()).to.eq(constants.AddressZero)
+  it('Deploy GovToken, Change Mintable/Burnable and Freeze Them', async () => {
+    expect(await dao.govToken()).to.eq(constants.AddressZero)
 
     const timestamp = dayjs().unix()
 
     let VOTING = {
-      target: shop.address,
-      data: createData('createLp', ['string', 'string'], ['EgorLP', 'ELP']),
+      target: auction.address,
+      data: createData('createGovToken', ['string', 'string'], ['EgorGovToken', 'EGovToken']),
       value: 0,
       nonce: 0,
       timestamp
@@ -105,13 +104,13 @@ describe('LP', () => {
         VOTING.timestamp,
         [sig]
       )
-    ).to.emit(shop, 'LpCreated')
+    ).to.emit(auction, 'GovTokenCreated')
 
-    expect(await dao.lp()).to.not.eq(constants.AddressZero)
+    expect(await dao.govToken()).to.not.eq(constants.AddressZero)
 
-    lp = LP__factory.connect(await dao.lp(), signers[0])
+    lp = GovToken__factory.connect(await dao.govToken(), signers[0])
 
-    expect(await shop.lps(lp.address)).to.eq(true)
+    expect(await auction.govTokens(lp.address)).to.eq(true)
 
     expect(
       await Promise.all([
@@ -123,18 +122,18 @@ describe('LP', () => {
         lp.mintableStatusFrozen(),
         lp.burnableStatusFrozen(),
         lp.dao(),
-        lp.shop()
+        lp.auction()
       ])
     ).to.deep.eq([
-      'EgorLP',
-      'ELP',
+      'EgorGovToken',
+      'EGovToken',
       constants.Zero,
       true,
       true,
       false,
       false,
       dao.address,
-      shop.address
+      auction.address
     ])
 
     VOTING = {
@@ -278,16 +277,16 @@ describe('LP', () => {
     expect(await lp.burnableStatusFrozen()).to.eq(true)
   })
 
-  it('Mint LP with Shop, then Burn', async () => {
-    expect(await dao.lp()).to.eq(constants.AddressZero)
+  it('Mint GovToken with Auction, then Burn', async () => {
+    expect(await dao.govToken()).to.eq(constants.AddressZero)
 
     const timestamp = dayjs().unix()
 
     const friendAddress = signers[1].address
 
     let VOTING = {
-      target: shop.address,
-      data: createData('createLp', ['string', 'string'], ['EgorLP', 'ELP']),
+      target: auction.address,
+      data: createData('createGovToken', ['string', 'string'], ['EgorGovToken', 'EGovToken']),
       value: 0,
       nonce: 0,
       timestamp
@@ -316,15 +315,15 @@ describe('LP', () => {
         VOTING.timestamp,
         [sig]
       )
-    ).to.emit(shop, 'LpCreated')
+    ).to.emit(auction, 'GovTokenCreated')
 
-    lp = LP__factory.connect(await dao.lp(), signers[0])
+    lp = GovToken__factory.connect(await dao.govToken(), signers[0])
 
     const goldToken = await new Token__factory(signers[0]).deploy()
     const silverToken = await new Token__factory(signers[0]).deploy()
 
     VOTING = {
-      target: shop.address,
+      target: auction.address,
       data: createData(
         'createPrivateOffer',
         ['address', 'address', 'uint256', 'uint256'],
@@ -362,9 +361,9 @@ describe('LP', () => {
 
     await goldToken.transfer(friendAddress, 30)
 
-    await goldToken.connect(signers[1]).approve(shop.address, 25)
+    await goldToken.connect(signers[1]).approve(auction.address, 25)
 
-    await shop.connect(signers[1]).buyPrivateOffer(dao.address, 0)
+    await auction.connect(signers[1]).buyPrivateOffer(dao.address, 0)
 
     expect(
       (
@@ -380,7 +379,7 @@ describe('LP', () => {
     ).to.deep.eq([0, 15, 0, 1e20 - 30, 5, 25])
 
     VOTING = {
-      target: shop.address,
+      target: auction.address,
       data: createData(
         'createPrivateOffer',
         ['address', 'address', 'uint256', 'uint256'],
@@ -416,9 +415,9 @@ describe('LP', () => {
       )
     )
 
-    await silverToken.approve(shop.address, 15)
+    await silverToken.approve(auction.address, 15)
 
-    await shop.buyPrivateOffer(dao.address, 1)
+    await auction.buyPrivateOffer(dao.address, 1)
 
     expect(
       (

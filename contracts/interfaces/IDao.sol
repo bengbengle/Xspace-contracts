@@ -6,17 +6,11 @@ interface IDao {
 
     function symbol() external view returns (string memory);
 
-    function lp() external view returns (address);
+    function govToken() external view returns (address);
 
-    function burnLp(
-        address _recipient,
-        uint256 _share,
-        address[] memory _tokens,
-        address[] memory _adapters,
-        address[] memory _pools
-    ) external returns (bool);
+    function setGovToken(address _govToken) external returns (bool);
 
-    function setLp(address _lp) external returns (bool);
+    function burnGovToken(address _recipient, uint256 _share, address[] memory _tokens, address[] memory _adapters, address[] memory _pools) external returns (bool);
 
     function quorum() external view returns (uint8);
 

@@ -9,20 +9,25 @@ import { ethers } from 'hardhat'
 import {
   Dao,
   Dao__factory,
+
   DaoViewer__factory,
+  
   Factory,
   Factory__factory,
-  LP,
-  LP__factory,
-  Shop,
-  Shop__factory,
+  
+  GovToken,
+  GovToken__factory,
+  
+  Auction,
+  Auction__factory,
+  
   Token,
   Token__factory
 } from '../../typechain-types'
 import { createData, createTxHash } from '../utils'
 
-describe('Shop', () => {
-  let shop: Shop
+describe('Auction', () => {
+  let auction: Auction
 
   let factory: Factory
 
@@ -34,7 +39,7 @@ describe('Shop', () => {
 
   let ownerAddress: string
 
-  let lp: LP
+  let gov_token: GovToken
 
   beforeEach(async () => {
     signers = await ethers.getSigners()
@@ -43,18 +48,17 @@ describe('Shop', () => {
 
     token = await new Token__factory(signers[0]).deploy()
 
-    shop = await new Shop__factory(signers[0]).deploy()
+    auction = await new Auction__factory(signers[0]).deploy()
 
     factory = await new Factory__factory(signers[0]).deploy(
-      shop.address,
       token.address
     )
-
-    await shop.setFactory(factory.address)
+    await factory.setupAuction(auction.address)
+    await auction.setFactory(factory.address)
 
     const DAO_CONFIG = {
-      daoName: 'EgorDAO',
-      daoSymbol: 'EDAO',
+      daoName: 'TestDAO',
+      daoSymbol: 'TDAO',
       quorum: 51,
       partners: [ownerAddress],
       shares: [10]
@@ -70,13 +74,13 @@ describe('Shop', () => {
 
     dao = Dao__factory.connect(await factory.daoAt(0), signers[0])
 
-    expect(await dao.lp()).to.eq(constants.AddressZero)
+    expect(await dao.govToken()).to.eq(constants.AddressZero)
 
     const timestamp = dayjs().unix()
 
     const VOTING = {
-      target: shop.address,
-      data: createData('createLp', ['string', 'string'], ['EgorLP', 'ELP']),
+      target: auction.address,
+      data: createData('createGovToken', ['string', 'string'], ['GovToken', 'GT']),
       value: 0,
       nonce: 0,
       timestamp
@@ -105,33 +109,28 @@ describe('Shop', () => {
         VOTING.timestamp,
         [sig]
       )
-    ).to.emit(shop, 'LpCreated')
+    ).to.emit(auction, 'GovTokenCreated')
 
-    expect(await dao.lp()).to.not.eq(constants.AddressZero)
+    expect(await dao.govToken()).to.not.eq(constants.AddressZero)
 
-    lp = LP__factory.connect(await dao.lp(), signers[0])
+    gov_token = GovToken__factory.connect(await dao.govToken(), signers[0])
 
-    expect(await shop.lps(lp.address)).to.eq(true)
+    expect(await auction.govTokens(gov_token.address)).to.eq(true)
   })
 
   it('Public Offer', async () => {
-    expect(await shop.publicOffers(dao.address)).to.have.property(
-      'isActive',
-      false
-    )
-    expect(await shop.publicOffers(dao.address)).to.have.property(
-      'currency',
-      constants.AddressZero
-    )
 
-    expect(+(await shop.publicOffers(dao.address)).rate).to.eq(0)
+    expect(await auction.publicOffers(dao.address)).to.have.property('isActive', false)
+    expect(await auction.publicOffers(dao.address)).to.have.property('currency', constants.AddressZero)
+
+    expect(+(await auction.publicOffers(dao.address)).rate).to.eq(0)
 
     const goldToken = await new Token__factory(signers[0]).deploy()
 
     const timestamp = dayjs().unix()
 
     const VOTING = {
-      target: shop.address,
+      target: auction.address,
       data: createData(
         'initPublicOffer',
         ['bool', 'address', 'uint256'],
@@ -165,51 +164,45 @@ describe('Shop', () => {
       [sig]
     )
 
-    const daoViewer = await new DaoViewer__factory(signers[0]).deploy()
+    // const daoViewer = await new DaoViewer__factory(signers[0]).deploy()
 
-    const investInfo = await daoViewer.getInvestInfo(factory.address)
+    // const investInfo = await daoViewer.getInvestInfo(factory.address)
 
-    expect(investInfo[0][0].slice(0, 6)).to.eql([
-      dao.address,
-      await dao.name(),
-      await dao.symbol(),
-      lp.address,
-      await lp.name(),
-      await lp.symbol()
-    ])
+    // expect(investInfo[0][0].slice(0, 6)).to.eql([
+    //   dao.address,
+    //   await dao.name(),
+    //   await dao.symbol(),
+    //   gov_token.address,
+    //   await gov_token.name(),
+    //   await gov_token.symbol()
+    // ])
 
-    expect(investInfo[1][0].slice(0, 3)).to.eql([
-      true,
-      goldToken.address,
-      parseEther('5')
-    ])
+    // expect(investInfo[1][0].slice(0, 3)).to.eql([
+    //   true,
+    //   goldToken.address,
+    //   parseEther('5')
+    // ])
 
-    expect(investInfo.slice(2)).to.eql([
-      [await goldToken.symbol()],
-      [await goldToken.decimals()],
-      [constants.Zero]
-    ])
+    // expect(investInfo.slice(2)).to.eql([
+    //   [await goldToken.symbol()],
+    //   [await goldToken.decimals()],
+    //   [constants.Zero]
+    // ])
 
-    expect(await shop.publicOffers(dao.address)).to.have.property(
-      'isActive',
-      true
-    )
-    expect(await shop.publicOffers(dao.address)).to.have.property(
-      'currency',
-      goldToken.address
-    )
+    expect(await auction.publicOffers(dao.address)).to.have.property('isActive', true)
+    expect(await auction.publicOffers(dao.address)).to.have.property('currency', goldToken.address)
 
-    expect((await shop.publicOffers(dao.address)).rate).to.eql(parseEther('5'))
+    expect((await auction.publicOffers(dao.address)).rate).to.eql(parseEther('5'))
 
     await goldToken.transfer(signers[1].address, parseEther('10'))
 
-    await goldToken.connect(signers[1]).approve(shop.address, parseEther('10'))
+    await goldToken.connect(signers[1]).approve(auction.address, parseEther('10'))
 
-    await shop.connect(signers[1]).buyPublicOffer(dao.address, parseEther('2'))
+    await auction.connect(signers[1]).buyPublicOffer(dao.address, parseEther('2'))
 
     expect(await goldToken.balanceOf(signers[1].address)).to.eq(0)
 
-    expect(await lp.balanceOf(signers[1].address)).to.eq(parseEther('2'))
+    expect(await gov_token.balanceOf(signers[1].address)).to.eq(parseEther('2'))
   })
 
   it('Create and Disable Private Offer', async () => {
@@ -219,10 +212,10 @@ describe('Shop', () => {
 
     const goldToken = await new Token__factory(signers[0]).deploy()
 
-    expect(await shop.numberOfPrivateOffers(dao.address)).to.eq(0)
+    expect(await auction.numberOfPrivateOffers(dao.address)).to.eq(0)
 
     let VOTING = {
-      target: shop.address,
+      target: auction.address,
       data: createData(
         'createPrivateOffer',
         ['address', 'address', 'uint256', 'uint256'],
@@ -257,7 +250,8 @@ describe('Shop', () => {
     )
 
     const daoViewer = await new DaoViewer__factory(signers[0]).deploy()
-
+    
+    console.log('daoViewer.address:', daoViewer.address);
     const privateOffersInfo = await daoViewer.getPrivateOffersInfo(
       factory.address
     )
@@ -266,9 +260,9 @@ describe('Shop', () => {
       dao.address,
       await dao.name(),
       await dao.symbol(),
-      lp.address,
-      await lp.name(),
-      await lp.symbol()
+      gov_token.address,
+      await gov_token.name(),
+      await gov_token.symbol()
     ])
 
     expect(privateOffersInfo.slice(1)).to.eql([
@@ -286,10 +280,10 @@ describe('Shop', () => {
       [await goldToken.decimals()]
     ])
 
-    expect(await shop.numberOfPrivateOffers(dao.address)).to.eq(1)
+    expect(await auction.numberOfPrivateOffers(dao.address)).to.eq(1)
 
     VOTING = {
-      target: shop.address,
+      target: auction.address,
       data: createData('disablePrivateOffer', ['uint256'], [0]),
       value: 0,
       nonce: 0,
@@ -320,9 +314,9 @@ describe('Shop', () => {
     )
 
     await expect(
-      shop.connect(signers[1]).buyPrivateOffer(dao.address, 0)
-    ).to.be.revertedWith('Shop: this offer is disabled')
+      auction.connect(signers[1]).buyPrivateOffer(dao.address, 0)
+    ).to.be.revertedWith('Auction: this offer is disabled')
 
-    expect(await shop.numberOfPrivateOffers(dao.address)).to.eq(1)
+    expect(await auction.numberOfPrivateOffers(dao.address)).to.eq(1)
   })
 })

@@ -5,18 +5,18 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-import "./LP.sol";
+import "./GovToken.sol";
 
 import "../interfaces/IFactory.sol";
 import "../interfaces/IDao.sol";
-import "../interfaces/ILP.sol";
+import "../interfaces/IGovToken.sol";
 
-contract Shop is ReentrancyGuard {
+contract Auction is ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     address public factory = address(0);
 
-    mapping(address => bool) public lps;
+    mapping(address => bool) public govTokens;
 
     struct PublicOffer {
         bool isActive;
@@ -37,21 +37,19 @@ contract Shop is ReentrancyGuard {
     mapping(address => mapping(uint256 => PrivateOffer)) public privateOffers; // privateOffers[dao][offerId]
     mapping(address => uint256) public numberOfPrivateOffers;
 
-    event LpCreated(address indexed lp);
+    event GovTokenCreated(address indexed lp);
 
-    modifier onlyDaoWithLp() {
+    modifier onlyDaoWithGovToken() {
         require(
-            IFactory(factory).containsDao(msg.sender) &&
-                IDao(msg.sender).lp() != address(0),
-            "Shop: this function is only for DAO with LP"
+            IFactory(factory).containsDao(msg.sender) && IDao(msg.sender).govToken() != address(0),
+            "Auction: this function is only for DAO with LP"
         );
         _;
     }
 
     function setFactory(address _factory) external returns (bool) {
         require(
-            factory == address(0),
-            "Shop: factory address has already been set"
+            factory == address(0), "Auction: factory address has already been set"
         );
 
         factory = _factory;
@@ -59,35 +57,34 @@ contract Shop is ReentrancyGuard {
         return true;
     }
 
-    function createLp(string memory _lpName, string memory _lpSymbol)
+    function createGovToken(string memory _name, string memory _symbol)
         external
         nonReentrant
         returns (bool)
     {
         require(
-            IFactory(factory).containsDao(msg.sender),
-            "Shop: only DAO can deploy LP"
+            IFactory(factory).containsDao(msg.sender), "Auction: only DAO can deploy LP"
         );
 
-        LP lp = new LP(_lpName, _lpSymbol, msg.sender);
+        GovToken govToken = new GovToken(_name, _symbol, msg.sender);
 
-        lps[address(lp)] = true;
+        govTokens[address(govToken)] = true;
 
-        emit LpCreated(address(lp));
+        emit GovTokenCreated(address(govToken));
 
-        bool b = IDao(msg.sender).setLp(address(lp));
+        bool b = IDao(msg.sender).setGovToken(address(govToken));
 
-        require(b, "Shop: LP setting error");
+        require(b, "Auction: Gov Token setting error");
 
         return true;
     }
 
     // DAO can use this to create/enable/disable/changeCurrency/changeRate
-    function initPublicOffer(
-        bool _isActive,
-        address _currency,
-        uint256 _rate
-    ) external onlyDaoWithLp returns (bool) {
+    function initPublicOffer(bool _isActive, address _currency, uint256 _rate) 
+        external 
+        onlyDaoWithGovToken 
+        returns (bool) 
+    {
         publicOffers[msg.sender] = PublicOffer({
             isActive: _isActive,
             currency: _currency,
@@ -97,15 +94,12 @@ contract Shop is ReentrancyGuard {
         return true;
     }
 
-    function createPrivateOffer(
-        address _recipient,
-        address _currency,
-        uint256 _currencyAmount,
-        uint256 _lpAmount
-    ) external onlyDaoWithLp returns (bool) {
-        privateOffers[msg.sender][
-            numberOfPrivateOffers[msg.sender]
-        ] = PrivateOffer({
+    function createPrivateOffer(address _recipient, address _currency, uint256 _currencyAmount, uint256 _lpAmount) 
+        external 
+        onlyDaoWithGovToken 
+        returns (bool)
+    {
+        privateOffers[msg.sender][numberOfPrivateOffers[msg.sender]] = PrivateOffer({
             isActive: true,
             recipient: _recipient,
             currency: _currency,
@@ -120,7 +114,7 @@ contract Shop is ReentrancyGuard {
 
     function disablePrivateOffer(uint256 _id)
         external
-        onlyDaoWithLp
+        onlyDaoWithGovToken
         returns (bool)
     {
         privateOffers[msg.sender][_id].isActive = false;
@@ -128,31 +122,30 @@ contract Shop is ReentrancyGuard {
         return true;
     }
 
-    function buyPublicOffer(address _dao, uint256 _lpAmount)
+    function buyPublicOffer(address _dao, uint256 _amount)
         external
         nonReentrant
         returns (bool)
     {
         require(
-            IFactory(factory).containsDao(_dao),
-            "Shop: only DAO can sell LPs"
+            IFactory(factory).containsDao(_dao), "Auction: only DAO can sell LPs"
         );
 
         PublicOffer memory publicOffer = publicOffers[_dao];
 
-        require(publicOffer.isActive, "Shop: this offer is disabled");
+        require(publicOffer.isActive, "Auction: this offer is disabled");
 
         IERC20(publicOffer.currency).safeTransferFrom(
             msg.sender,
             _dao,
-            (_lpAmount * publicOffer.rate) / 1e18
+            (_amount * publicOffer.rate) / 1e18
         );
 
-        address lp = IDao(_dao).lp();
+        address govToken = IDao(_dao).govToken();
 
-        bool b = ILP(lp).mint(msg.sender, _lpAmount);
+        bool b = IGovToken(govToken).mint(msg.sender, _amount);
 
-        require(b, "Shop: mint error");
+        require(b, "Auction: mint error");
 
         return true;
     }
@@ -163,17 +156,16 @@ contract Shop is ReentrancyGuard {
         returns (bool)
     {
         require(
-            IFactory(factory).containsDao(_dao),
-            "Shop: only DAO can sell LPs"
+            IFactory(factory).containsDao(_dao), "Auction: only DAO can sell LPs"
         );
 
         PrivateOffer storage offer = privateOffers[_dao][_id];
 
-        require(offer.isActive, "Shop: this offer is disabled");
+        require(offer.isActive, "Auction: this offer is disabled");
 
         offer.isActive = false;
 
-        require(offer.recipient == msg.sender, "Shop: wrong recipient");
+        require(offer.recipient == msg.sender, "Auction: wrong recipient");
 
         IERC20(offer.currency).safeTransferFrom(
             msg.sender,
@@ -181,11 +173,11 @@ contract Shop is ReentrancyGuard {
             offer.currencyAmount
         );
 
-        address lp = IDao(_dao).lp();
+        address token = IDao(_dao).govToken();
 
-        bool b = ILP(lp).mint(msg.sender, offer.lpAmount);
+        bool b = IGovToken(token).mint(msg.sender, offer.lpAmount);
 
-        require(b, "Shop: mint error");
+        require(b, "Auction: mint error");
 
         return true;
     }

@@ -9,14 +9,14 @@ import {
   Dao__factory,
   Factory,
   Factory__factory,
-  Shop,
-  Shop__factory,
+  // Auction,
+  // Auction__factory,
   Token,
   Token__factory
 } from '../../typechain-types'
 
 describe('Factory', () => {
-  let shop: Shop
+  // let auction: Auction
 
   let factory: Factory
 
@@ -33,22 +33,21 @@ describe('Factory', () => {
 
     token = await new Token__factory(signers[0]).deploy()
 
-    shop = await new Shop__factory(signers[0]).deploy()
+    // auction = await new Auction__factory(signers[0]).deploy()
 
     factory = await new Factory__factory(signers[0]).deploy(
-      shop.address,
       token.address
     )
 
-    await shop.setFactory(factory.address)
+    // await auction.setFactory(factory.address)
   })
 
   it('Create DAO', async () => {
     expect(await factory.getDaos()).to.be.an('array').that.is.empty
 
     const DAO_CONFIG = {
-      daoName: 'EgorDAO',
-      daoSymbol: 'EDAO',
+      daoName: 'TestDAO',
+      daoSymbol: 'TDAO',
       quorum: 51,
       partners: [ownerAddress],
       shares: [10]
@@ -117,8 +116,8 @@ describe('Factory', () => {
 
     beforeEach(async () => {
       const DAO_CONFIG = {
-        daoName: 'EgorDAO',
-        daoSymbol: 'EDAO',
+        daoName: 'TestDAO',
+        daoSymbol: 'TDAO',
         quorum: 51,
         partners: [ownerAddress],
         shares: [10]

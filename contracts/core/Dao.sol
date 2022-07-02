@@ -9,7 +9,6 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-import "../interfaces/ILP.sol";
 import "../interfaces/IAdapter.sol";
 import "../interfaces/IFactory.sol";
 
@@ -33,11 +32,11 @@ contract Dao is ReentrancyGuard, ERC20 {
     // Factory Address
     address public immutable factory;
 
-    // Shop Address
-    address public immutable shop;
+    // Auction Address
+    // address public immutable auction;
 
-    // LP Token Address
-    address public lp = address(0);
+    // TODO: NFT token address
+    address public govToken = address(0); 
 
     // Quorum >=1 <=100
     uint8 public quorum;
@@ -113,7 +112,7 @@ contract Dao is ReentrancyGuard, ERC20 {
     ) ERC20(_name, _symbol) {
         factory = msg.sender;
 
-        shop = IFactory(msg.sender).shop();
+        // auction = IFactory(msg.sender).auction();
 
         require(
             _quorum >= 1 && _quorum <= 100,
@@ -283,8 +282,7 @@ contract Dao is ReentrancyGuard, ERC20 {
 
     function checkSubscription() public view returns (bool) {
         if (
-            IFactory(factory).monthlyCost() > 0 &&
-            IFactory(factory).subscriptions(address(this)) < block.timestamp
+            IFactory(factory).monthlyCost() > 0 && IFactory(factory).subscriptions(address(this)) < block.timestamp
         ) {
             return false;
         }
@@ -292,18 +290,18 @@ contract Dao is ReentrancyGuard, ERC20 {
         return true;
     }
 
-    /*----BURN LP TOKENS---------------------------------*/
+     /*----BURN LP TOKENS---------------------------------*/
 
-    function burnLp(
+    function burnGovToken(
         address _recipient,
         uint256 _share,
         address[] memory _tokens,
         address[] memory _adapters,
         address[] memory _pools
     ) external nonReentrant returns (bool) {
-        require(lp != address(0), "DAO: LP not set yet");
+        require(govToken != address(0), "DAO: GovToken not set yet");
 
-        require(msg.sender == lp, "DAO: only for LP");
+        require(msg.sender == govToken, "DAO: only for GovToken");
 
         require(
             !_hasDuplicate(_tokens),
@@ -312,7 +310,7 @@ contract Dao is ReentrancyGuard, ERC20 {
 
         for (uint256 i = 0; i < _tokens.length; i++) {
             require(
-                _tokens[i] != lp && _tokens[i] != address(this),
+                _tokens[i] != govToken && _tokens[i] != address(this),
                 "DAO: LP and GT cannot be part of a share"
             );
         }
@@ -326,9 +324,7 @@ contract Dao is ReentrancyGuard, ERC20 {
                 for (uint256 i = 0; i < length - 1; i++) {
                     for (uint256 j = i + 1; j < length; j++) {
                         require(
-                            !(_adapters[i] == _adapters[j] &&
-                                _pools[i] == _pools[j]),
-                            "DAO: duplicates are prohibited (adapters)"
+                            !(_adapters[i] == _adapters[j] && _pools[i] == _pools[j]), "DAO: duplicates are prohibited (adapters)"
                         );
                     }
                 }
@@ -345,9 +341,7 @@ contract Dao is ReentrancyGuard, ERC20 {
             uint256[] memory _tokenShares = new uint256[](_tokens.length);
 
             for (uint256 i = 0; i < _tokens.length; i++) {
-                _tokenShares[i] = ((IERC20(_tokens[i]).balanceOf(
-                    address(this)
-                ) * _share) / 1e18);
+                _tokenShares[i] = ((IERC20(_tokens[i]).balanceOf(address(this)) * _share) / 1e18);
             }
 
             for (uint256 i = 0; i < _tokens.length; i++) {
@@ -362,20 +356,14 @@ contract Dao is ReentrancyGuard, ERC20 {
 
             for (uint256 i = 0; i < length; i++) {
                 require(
-                    adapters.contains(_adapters[i]),
-                    "DAO: this is not an adapter"
+                    adapters.contains(_adapters[i]), "DAO: this is not an adapter"
                 );
 
                 require(
-                    permitted.contains(_adapters[i]),
-                    "DAO: this adapter is not permitted"
+                    permitted.contains(_adapters[i]), "DAO: this adapter is not permitted"
                 );
 
-                bool b = IAdapter(_adapters[i]).withdraw(
-                    _recipient,
-                    _pools[i],
-                    _share
-                );
+                bool b = IAdapter(_adapters[i]).withdraw(_recipient, _pools[i], _share);
 
                 require(b, "DAO: withdrawal error");
             }
@@ -383,6 +371,7 @@ contract Dao is ReentrancyGuard, ERC20 {
 
         return true;
     }
+
 
     /*----GT MANAGEMENT----------------------------------*/
 
@@ -406,11 +395,11 @@ contract Dao is ReentrancyGuard, ERC20 {
         return true;
     }
 
-    function move(
-        address _sender,
-        address _recipient,
-        uint256 _amount
-    ) external onlyDao returns (bool) {
+    function move(address _sender, address _recipient, uint256 _amount) 
+        external 
+        onlyDao 
+        returns (bool) 
+    {
         _transfer(_sender, _recipient, _amount);
         return true;
     }
@@ -427,18 +416,18 @@ contract Dao is ReentrancyGuard, ERC20 {
 
     /*----ADAPTERS & PERMITTED---------------------------*/
 
-    function addAdapter(address a) external onlyDao returns (bool) {
-        require(adapters.add(a), "DAO: already an adapter");
+    function addAdapter(address _adapter) external onlyDao returns (bool) {
+        require(adapters.add(_adapter), "DAO: already an adapter");
 
-        permitted.add(a);
+        permitted.add(_adapter);
 
         return true;
     }
 
-    function removeAdapter(address a) external onlyDao returns (bool) {
-        require(adapters.remove(a), "DAO: not an adapter");
+    function removeAdapter(address _adapter) external onlyDao returns (bool) {
+        require(adapters.remove(_adapter), "DAO: not an adapter");
 
-        permitted.remove(a);
+        permitted.remove(_adapter);
 
         return true;
     }
@@ -455,24 +444,24 @@ contract Dao is ReentrancyGuard, ERC20 {
         return true;
     }
 
-    /*----LP---------------------------------------------*/
+    /*----Gov Token---------------------------------------------*/
 
-    function setLp(address _lp) external returns (bool) {
-        require(lp == address(0), "DAO: LP address has already been set");
+    function setGovToken(address _govToken) external returns (bool) {
+        require(govToken == address(0), "DAO: Gov Token address has already been set");
 
-        require(msg.sender == shop, "DAO: only Shop can set LP");
+        // require(msg.sender == auction, "DAO: only Auction can set Gov Token");
 
-        lp = _lp;
+        govToken = _govToken;
 
         return true;
     }
 
     /*----QUORUM-----------------------------------------*/
 
-    function changeQuorum(uint8 _q) external onlyDao returns (bool) {
-        require(_q >= 1 && _q <= 100, "DAO: quorum should be 1 <= q <= 100");
+    function changeQuorum(uint8 _quorum) external onlyDao returns (bool) {
+        require(_quorum >= 1 && _quorum <= 100, "DAO: quorum should be 1 <= _quorum <= 100");
 
-        quorum = _q;
+        quorum = _quorum;
 
         return true;
     }

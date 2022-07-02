@@ -6,22 +6,26 @@ import { parseEther, verifyMessage } from 'ethers/lib/utils'
 import { ethers } from 'hardhat'
 
 import {
-  Adapter__factory,
   Dao,
   Dao__factory,
+  GovToken__factory,
   Factory,
   Factory__factory,
-  LP__factory,
   PayableFunction__factory,
-  Shop,
-  Shop__factory,
+  
   Token,
-  Token__factory
+  Token__factory,
+  
+  Auction,
+  Auction__factory,
+  
+  Adapter,
+  Adapter__factory
 } from '../../typechain-types'
 import { createData, createTxHash } from '../utils'
 
 describe('Dao', () => {
-  let shop: Shop
+  let auction: Auction
 
   let factory: Factory
 
@@ -40,18 +44,15 @@ describe('Dao', () => {
 
     token = await new Token__factory(signers[0]).deploy()
 
-    shop = await new Shop__factory(signers[0]).deploy()
+    auction = await new Auction__factory(signers[0]).deploy()
 
-    factory = await new Factory__factory(signers[0]).deploy(
-      shop.address,
-      token.address
-    )
+    factory = await new Factory__factory(signers[0]).deploy(token.address)
 
-    await shop.setFactory(factory.address)
+    await auction.setFactory(factory.address)
 
     const DAO_CONFIG = {
-      daoName: 'EgorDAO',
-      daoSymbol: 'EDAO',
+      daoName: 'TestDAO',
+      daoSymbol: 'TDAO',
       quorum: 51,
       partners: [ownerAddress],
       shares: [10]
@@ -386,9 +387,9 @@ describe('Dao', () => {
   })
 
   it('Revert GT Transfer and Transfer From', async () => {
-    await expect(dao.transfer(signers[1].address, 1)).to.be.revertedWith(
-      'GT: transfer is prohibited'
-    )
+    await expect(
+      dao.transfer(signers[1].address, 1)
+    ).to.be.revertedWith('GT: transfer is prohibited')
 
     await expect(
       dao.transferFrom(signers[0].address, signers[1].address, 1)
@@ -446,8 +447,8 @@ describe('Dao', () => {
     expect(await dao.getPermitted()).to.deep.eq([adapter.address])
 
     VOTING = {
-      target: shop.address,
-      data: createData('createLp', ['string', 'string'], ['EgorLP', 'ELP']),
+      target: auction.address,
+      data: createData('createGovToken', ['string', 'string'], ['EgorLP', 'ELP']),
       value: 0,
       nonce: 0,
       timestamp
@@ -476,16 +477,16 @@ describe('Dao', () => {
         VOTING.timestamp,
         [sig]
       )
-    ).to.emit(shop, 'LpCreated')
+    ).to.emit(auction, 'GovTokenCreated')
 
-    expect(await dao.lp()).to.not.eq(constants.AddressZero)
+    expect(await dao.govToken()).to.not.eq(constants.AddressZero)
 
-    const lp = LP__factory.connect(await dao.lp(), signers[0])
+    const lp = GovToken__factory.connect(await dao.govToken(), signers[0])
 
     const goldToken = await new Token__factory(signers[0]).deploy()
 
     VOTING = {
-      target: shop.address,
+      target: auction.address,
       data: createData(
         'createPrivateOffer',
         ['address', 'address', 'uint256', 'uint256'],
@@ -519,7 +520,7 @@ describe('Dao', () => {
       [sig]
     )
 
-    await shop.buyPrivateOffer(dao.address, 0)
+    await auction.buyPrivateOffer(dao.address, 0)
 
     await lp.burn(0, [], [adapter.address], [constants.AddressZero])
 
@@ -826,8 +827,8 @@ describe('Dao', () => {
     )
 
     VOTING = {
-      target: shop.address,
-      data: createData('createLp', ['string', 'string'], ['EgorLP', 'ELP']),
+      target: auction.address,
+      data: createData('createGovToken', ['string', 'string'], ['EgorLP', 'ELP']),
       value: 0,
       nonce: 0,
       timestamp
@@ -856,16 +857,16 @@ describe('Dao', () => {
         VOTING.timestamp,
         [sig]
       )
-    ).to.emit(shop, 'LpCreated')
+    ).to.emit(auction, 'GovTokenCreated')
 
-    expect(await dao.lp()).to.not.eq(constants.AddressZero)
+    expect(await dao.govToken()).to.not.eq(constants.AddressZero)
 
-    const lp = LP__factory.connect(await dao.lp(), signers[0])
+    const lp = GovToken__factory.connect(await dao.govToken(), signers[0])
 
     const goldToken = await new Token__factory(signers[0]).deploy()
 
     VOTING = {
-      target: shop.address,
+      target: auction.address,
       data: createData(
         'createPrivateOffer',
         ['address', 'address', 'uint256', 'uint256'],
@@ -899,7 +900,7 @@ describe('Dao', () => {
       [sig]
     )
 
-    await shop.buyPrivateOffer(dao.address, 0)
+    await auction.buyPrivateOffer(dao.address, 0)
 
     await expect(
       lp.burn(

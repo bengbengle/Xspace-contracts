@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
-import "../interfaces/ILP.sol";
+import "../interfaces/IGovToken.sol";
 import "../interfaces/IDao.sol";
 
 contract PrivateExitModule is ReentrancyGuard {
@@ -81,9 +81,7 @@ contract PrivateExitModule is ReentrancyGuard {
         nonReentrant
         returns (bool success)
     {
-        PrivateExitOffer storage offer = privateExitOffers[_daoAddress][
-            _offerId
-        ];
+        PrivateExitOffer storage offer = privateExitOffers[_daoAddress][_offerId];
 
         require(offer.isActive, "PrivateExitModule: Offer is Disabled");
 
@@ -96,34 +94,34 @@ contract PrivateExitModule is ReentrancyGuard {
 
         IDao dao = IDao(_daoAddress);
 
-        address lpAddress = dao.lp();
+        address govToken = dao.govToken();
 
-        bool burnableStatus = ILP(lpAddress).burnable();
+        bool burnableStatus = IGovToken(govToken).burnable();
 
         require(
-            burnableStatus || !ILP(lpAddress).burnableStatusFrozen(),
+            burnableStatus || !IGovToken(govToken).burnableStatusFrozen(),
             "PrivateExitModule: LP is not Burnable"
         );
 
         if (!burnableStatus) {
             dao.executePermitted(
-                lpAddress,
+                govToken,
                 abi.encodeWithSignature("changeBurnable(bool)", true),
                 0
             );
         }
 
-        IERC20(lpAddress).safeTransferFrom(
+        IERC20(govToken).safeTransferFrom(
             msg.sender,
             address(this),
             offer.lpAmount
         );
 
-        IERC20(lpAddress).approve(lpAddress, offer.lpAmount);
+        IERC20(govToken).approve(govToken, offer.lpAmount);
 
         address[] memory emptyAddressArray = new address[](0);
 
-        ILP(lpAddress).burn(
+        IGovToken(govToken).burn(
             offer.lpAmount,
             emptyAddressArray,
             emptyAddressArray,
@@ -150,7 +148,7 @@ contract PrivateExitModule is ReentrancyGuard {
 
         if (!burnableStatus) {
             dao.executePermitted(
-                lpAddress,
+                govToken,
                 abi.encodeWithSignature("changeBurnable(bool)", false),
                 0
             );

@@ -5,8 +5,8 @@ import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 import "../interfaces/IFactory.sol";
 import "../interfaces/IDao.sol";
-import "../interfaces/ILP.sol";
-import "../interfaces/IShop.sol";
+import "../interfaces/IGovToken.sol";
+import "../interfaces/IAuction.sol";
 
 contract DaoViewer {
     struct DaoInfo {
@@ -19,7 +19,7 @@ contract DaoViewer {
     }
 
     function getDao(address _dao) public view returns (DaoInfo memory) {
-        address lp = IDao(_dao).lp();
+        address lp = IDao(_dao).govToken();
 
         if (lp == address(0)) {
             return
@@ -39,8 +39,8 @@ contract DaoViewer {
                 daoName: IDao(_dao).name(),
                 daoSymbol: IDao(_dao).symbol(),
                 lp: lp,
-                lpName: ILP(lp).name(),
-                lpSymbol: ILP(lp).symbol()
+                lpName: IGovToken(lp).name(),
+                lpSymbol: IGovToken(lp).symbol()
             });
     }
 
@@ -197,7 +197,7 @@ contract DaoViewer {
         view
         returns (DaoConfiguration memory)
     {
-        address lp = IDao(_dao).lp();
+        address lp = IDao(_dao).govToken();
 
         if (lp == address(0)) {
             return
@@ -220,15 +220,14 @@ contract DaoViewer {
                     gtMintable: IDao(_dao).mintable(),
                     gtBurnable: IDao(_dao).burnable(),
                     lpAddress: lp,
-                    lpMintable: ILP(lp).mintable(),
-                    lpBurnable: ILP(lp).burnable(),
-                    lpMintableStatusFrozen: ILP(lp).mintableStatusFrozen(),
-                    lpBurnableStatusFrozen: ILP(lp).burnableStatusFrozen(),
+                    lpMintable: IGovToken(lp).mintable(),
+                    lpBurnable: IGovToken(lp).burnable(),
+                    lpMintableStatusFrozen: IGovToken(lp).mintableStatusFrozen(),
+                    lpBurnableStatusFrozen: IGovToken(lp).burnableStatusFrozen(),
                     permittedLength: IDao(_dao).numberOfPermitted(),
                     adaptersLength: IDao(_dao).numberOfAdapters(),
                     monthlyCost: IFactory(_factory).monthlyCost(),
-                    numberOfPrivateOffers: IShop(IFactory(_factory).shop())
-                        .numberOfPrivateOffers(_dao)
+                    numberOfPrivateOffers: IAuction(IFactory(_factory).auction()).numberOfPrivateOffers(_dao)
                 });
         }
     }
@@ -238,7 +237,7 @@ contract DaoViewer {
         view
         returns (
             DaoInfo[] memory,
-            IShop.PublicOffer[] memory,
+            IAuction.PublicOffer[] memory,
             string[] memory,
             uint8[] memory,
             uint256[] memory
@@ -251,19 +250,19 @@ contract DaoViewer {
         if (daosLength == 0) {
             return (
                 new DaoInfo[](0),
-                new IShop.PublicOffer[](0),
+                new IAuction.PublicOffer[](0),
                 new string[](0),
                 new uint8[](0),
                 new uint256[](0)
             );
         }
 
-        IShop.PublicOffer[] memory publicOffers = new IShop.PublicOffer[](
+        IAuction.PublicOffer[] memory publicOffers = new IAuction.PublicOffer[](
             daosLength
         );
 
         for (uint256 i = 0; i < daosLength; i++) {
-            publicOffers[i] = IShop(IFactory(_factory).shop()).publicOffers(
+            publicOffers[i] = IAuction(IFactory(_factory).auction()).publicOffers(
                 daos[i].dao
             );
         }
@@ -290,7 +289,7 @@ contract DaoViewer {
         uint256[] memory numberOfPrivateOffers = new uint256[](daosLength);
 
         for (uint256 i = 0; i < daosLength; i++) {
-            numberOfPrivateOffers[i] = IShop(IFactory(_factory).shop())
+            numberOfPrivateOffers[i] = IAuction(IFactory(_factory).auction())
                 .numberOfPrivateOffers(daos[i].dao);
         }
 
@@ -303,7 +302,7 @@ contract DaoViewer {
         returns (
             DaoInfo[] memory,
             uint256[] memory,
-            IShop.PrivateOffer[] memory,
+            IAuction.PrivateOffer[] memory,
             string[] memory,
             uint8[] memory
         )
@@ -316,7 +315,7 @@ contract DaoViewer {
             return (
                 new DaoInfo[](0),
                 new uint256[](0),
-                new IShop.PrivateOffer[](0),
+                new IAuction.PrivateOffer[](0),
                 new string[](0),
                 new uint8[](0)
             );
@@ -326,19 +325,17 @@ contract DaoViewer {
 
         uint256 privateOffersLength = 0;
 
-        IShop shop = IShop(IFactory(_factory).shop());
+        IAuction auction = IAuction(IFactory(_factory).auction());
 
         for (uint256 i = 0; i < daosLength; i++) {
-            uint256 numberOfPrivateOffers = shop.numberOfPrivateOffers(
-                daos[i].dao
-            );
+            uint256 numberOfPrivateOffers = auction.numberOfPrivateOffers(daos[i].dao);
 
             totalPrivateOffers[i] = numberOfPrivateOffers;
 
             privateOffersLength += numberOfPrivateOffers;
         }
 
-        IShop.PrivateOffer[] memory privateOffers = new IShop.PrivateOffer[](
+        IAuction.PrivateOffer[] memory privateOffers = new IAuction.PrivateOffer[](
             privateOffersLength
         );
 
@@ -350,7 +347,7 @@ contract DaoViewer {
 
         for (uint256 i = 0; i < daosLength; i++) {
             for (uint256 j = 0; j < totalPrivateOffers[i]; j++) {
-                IShop.PrivateOffer memory privateOffer = shop.privateOffers(
+                IAuction.PrivateOffer memory privateOffer = auction.privateOffers(
                     daos[i].dao,
                     j
                 );

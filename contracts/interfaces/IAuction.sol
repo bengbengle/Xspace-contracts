@@ -1,17 +1,14 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.6;
 
-interface IShop {
+interface IAuction {
     struct PublicOffer {
         bool isActive;
         address currency;
         uint256 rate;
     }
 
-    function publicOffers(address _dao)
-        external
-        view
-        returns (PublicOffer memory);
+    function publicOffers(address _dao) external view returns (PublicOffer memory);
 
     struct PrivateOffer {
         bool isActive;

@@ -12,9 +12,8 @@ contract Factory is Ownable {
     using EnumerableSet for EnumerableSet.AddressSet;
     using SafeERC20 for IERC20;
 
-    address public immutable shop;
-
     address public immutable Xspace;
+    address public auction;
 
     mapping(address => uint256) public subscriptions;
 
@@ -54,8 +53,7 @@ contract Factory is Ownable {
 
     event DaoCreated(address indexed dao);
 
-    constructor(address _shop, address _Xspace) {
-        shop = _shop;
+    constructor(address _Xspace) {
         Xspace = _Xspace;
     }
 
@@ -76,6 +74,11 @@ contract Factory is Ownable {
 
         emit DaoCreated(address(dao));
 
+        return true;
+    }
+
+    function setupAuction(address _auction) external returns (bool) {
+        auction = _auction;
         return true;
     }
 

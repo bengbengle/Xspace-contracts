@@ -4,7 +4,7 @@ import { ethers, run } from 'hardhat'
 import {
   DaoViewer__factory,
   Factory__factory,
-  Shop__factory,
+  Auction__factory,
   Xspace__factory
 } from '../../typechain-types'
 
@@ -13,34 +13,33 @@ dotenv.config()
 async function main() {
   const signers = await ethers.getSigners()
 
-  const shop = await new Shop__factory(signers[0]).deploy()
+  const auction = await new Auction__factory(signers[0]).deploy()
 
-  await shop.deployed()
+  await auction.deployed()
 
-  console.log('Shop:', shop.address)
+  console.log('Auction:', auction.address)
 
-  const Xspace = await new Xspace__factory(signers[0]).deploy()
+  const xspace = await new Xspace__factory(signers[0]).deploy()
 
-  await Xspace.deployed()
+  await xspace.deployed()
 
-  console.log('Xspace:', Xspace.address)
+  console.log('Xspace:', xspace.address)
 
   const factory = await new Factory__factory(signers[0]).deploy(
-    shop.address,
-    Xspace.address
+    xspace.address
   )
 
   await factory.deployed()
 
   console.log('Factory:', factory.address)
 
-  console.log('Setting Factory Address to Shop')
+  console.log('Setting Factory Address to Auction')
 
-  const tx = await shop.setFactory(factory.address)
+  const tx = await auction.setFactory(factory.address)
 
   await tx.wait()
 
-  console.log('Success: Setting Factory Address to Shop')
+  console.log('Success: Setting Factory Address to Auction')
 
   const daoViewer = await new DaoViewer__factory(signers[0]).deploy()
 
@@ -50,16 +49,16 @@ async function main() {
 
   try {
     await run('verify:verify', {
-      address: shop.address,
-      contract: 'contracts/core/Shop.sol:Shop'
+      address: auction.address,
+      contract: 'contracts/core/Auction.sol:Auction'
     })
   } catch {
-    console.log('Verification problem (Shop)')
+    console.log('Verification problem (Auction)')
   }
 
   try {
     await run('verify:verify', {
-      address: Xspace.address,
+      address: xspace.address,
       contract: 'contracts/core/Xspace.sol:Xspace'
     })
   } catch {
@@ -69,7 +68,7 @@ async function main() {
   try {
     await run('verify:verify', {
       address: factory.address,
-      constructorArguments: [shop.address, Xspace.address],
+      constructorArguments: [auction.address, xspace.address],
       contract: 'contracts/core/Factory.sol:Factory'
     })
   } catch {
