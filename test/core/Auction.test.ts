@@ -53,6 +53,7 @@ describe('Auction', () => {
     factory = await new Factory__factory(signers[0]).deploy(
       token.address
     )
+    
     await factory.setupAuction(auction.address)
     await auction.setFactory(factory.address)
 

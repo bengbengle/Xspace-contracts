@@ -389,11 +389,11 @@ describe('Dao', () => {
   it('Revert GT Transfer and Transfer From', async () => {
     await expect(
       dao.transfer(signers[1].address, 1)
-    ).to.be.revertedWith('GT: transfer is prohibited')
+    ).to.be.revertedWith('DAO: transfer is prohibited')
 
     await expect(
       dao.transferFrom(signers[0].address, signers[1].address, 1)
-    ).to.be.revertedWith('GT: transferFrom is prohibited')
+    ).to.be.revertedWith('DAO: transferFrom is prohibited')
   })
 
   it('Adapter and Viewers, Burn with Mock Adapter, Remove Adapter', async () => {

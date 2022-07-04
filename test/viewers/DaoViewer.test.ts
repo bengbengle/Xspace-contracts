@@ -12,8 +12,13 @@ import {
   DaoViewer__factory,
   Factory,
   Factory__factory,
-  LP,
-  LP__factory,
+  
+  GovToken,
+  GovToken__factory,
+  
+  Auction,
+  Auction__factory,
+
   Token,
   Token__factory
 } from '../../typechain-types'
@@ -29,7 +34,9 @@ describe('DaoViewer', () => {
 
   let ownerAddress: string
 
-  let lp: LP
+  let govToken: GovToken
+
+  let auction: Auction 
 
   let daoViewer: DaoViewer
 
@@ -40,22 +47,18 @@ describe('DaoViewer', () => {
 
     token = await new Token__factory(signers[0]).deploy()
 
+    factory = await new Factory__factory(signers[0]).deploy(token.address)
+
     auction = await new Auction__factory(signers[0]).deploy()
 
-    factory = await new Factory__factory(signers[0]).deploy(
-      token.address
-    )
-
-    // await auction.setFactory(factory.address)
+    await factory.setupAuction(auction.address)
+    await auction.setFactory(factory.address)
 
     daoViewer = await new DaoViewer__factory(signers[0]).deploy()
 
-    expect(await daoViewer.getDaos(factory.address)).to.be.an('array').that.is
-      .empty
+    expect(await daoViewer.getDaos(factory.address)).to.be.an('array').that.is.empty
 
-    expect(await daoViewer.userDaos(ownerAddress, factory.address)).to.be.an(
-      'array'
-    ).that.is.empty
+    expect(await daoViewer.userDaos(ownerAddress, factory.address)).to.be.an('array').that.is.empty
 
     await factory.create('FIRST', 'FIRST', 51, [ownerAddress], [10])
 
@@ -103,14 +106,10 @@ describe('DaoViewer', () => {
     expect((await daoViewer.getDao(await factory.daoAt(0))).daoName).to.eq(
       'FIRST'
     )
-    expect((await daoViewer.getDao(await factory.daoAt(0))).daoSymbol).to.eq(
-      'FIRST'
-    )
-    expect((await daoViewer.getDao(await factory.daoAt(0))).lp).to.eq(
-      constants.AddressZero
-    )
-    expect((await daoViewer.getDao(await factory.daoAt(0))).lpName).to.eq('')
-    expect((await daoViewer.getDao(await factory.daoAt(0))).lpSymbol).to.eq('')
+    expect((await daoViewer.getDao(await factory.daoAt(0))).daoSymbol).to.eq('FIRST')
+    expect((await daoViewer.getDao(await factory.daoAt(0))).govToken).to.eq(constants.AddressZero)
+    expect((await daoViewer.getDao(await factory.daoAt(0))).name).to.eq('')
+    expect((await daoViewer.getDao(await factory.daoAt(0))).symbol).to.eq('')
 
     await factory.create('SECOND', 'SECOND', 61, [ownerAddress], [20])
 
@@ -119,17 +118,16 @@ describe('DaoViewer', () => {
     expect((await daoViewer.getDao(await factory.daoAt(1))).dao).to.eq(
       await factory.daoAt(1)
     )
-    expect((await daoViewer.getDao(await factory.daoAt(1))).daoName).to.eq(
-      'SECOND'
-    )
-    expect((await daoViewer.getDao(await factory.daoAt(1))).daoSymbol).to.eq(
-      'SECOND'
-    )
-    expect((await daoViewer.getDao(await factory.daoAt(1))).lp).to.eq(
+
+    expect((await daoViewer.getDao(await factory.daoAt(1))).daoName).to.eq('SECOND')
+    expect((await daoViewer.getDao(await factory.daoAt(1))).daoSymbol).to.eq('SECOND')
+
+    expect((await daoViewer.getDao(await factory.daoAt(1))).govToken).to.eq(
       constants.AddressZero
     )
-    expect((await daoViewer.getDao(await factory.daoAt(1))).lpName).to.eq('')
-    expect((await daoViewer.getDao(await factory.daoAt(1))).lpSymbol).to.eq('')
+
+    expect((await daoViewer.getDao(await factory.daoAt(1))).name).to.eq('')
+    expect((await daoViewer.getDao(await factory.daoAt(1))).symbol).to.eq('')
 
     await factory.create('THIRD', 'THIRD', 71, [ownerAddress], [30])
 
@@ -144,12 +142,12 @@ describe('DaoViewer', () => {
     expect((await daoViewer.getDao(await factory.daoAt(2))).daoSymbol).to.eq(
       'THIRD'
     )
-    expect((await daoViewer.getDao(await factory.daoAt(2))).lp).to.eq(
+    expect((await daoViewer.getDao(await factory.daoAt(2))).govToken).to.eq(
       constants.AddressZero
     )
-    expect((await daoViewer.getDao(await factory.daoAt(2))).lpName).to.eq('')
+    expect((await daoViewer.getDao(await factory.daoAt(2))).name).to.eq('')
 
-    expect((await daoViewer.getDao(await factory.daoAt(2))).lpSymbol).to.eq('')
+    expect((await daoViewer.getDao(await factory.daoAt(2))).symbol).to.eq('')
 
     const firstDao = Dao__factory.connect(await factory.daoAt(0), signers[0])
 
@@ -192,17 +190,15 @@ describe('DaoViewer', () => {
 
     expect(await firstDao.govToken()).to.not.eq(constants.AddressZero)
 
-    lp = LP__factory.connect(await firstDao.govToken(), signers[0])
+    console.log('firstDao.govToken()::', await firstDao.govToken())
 
-    expect(await auction.govTokens(lp.address)).to.eq(true)
+    govToken = GovToken__factory.connect(await firstDao.govToken(), signers[0])
 
-    expect((await daoViewer.getDao(firstDao.address)).govToken).to.eq(lp.address)
-    expect((await daoViewer.getDao(await factory.daoAt(0))).lpName).to.eq(
-      'FirstGovToken'
-    )
-    expect((await daoViewer.getDao(await factory.daoAt(0))).lpSymbol).to.eq(
-      'FLP'
-    )
+    expect(await auction.govTokens(govToken.address)).to.eq(true)
+
+    expect((await daoViewer.getDao(firstDao.address)).govToken).to.eq(govToken.address)
+    expect((await daoViewer.getDao(await factory.daoAt(0))).name).to.eq('FirstGovToken')
+    expect((await daoViewer.getDao(await factory.daoAt(0))).symbol).to.eq('FGT')
 
     expect(
       await daoViewer.userDaos(ownerAddress, factory.address)
@@ -282,14 +278,7 @@ describe('DaoViewer', () => {
 
     token = await new Token__factory(signers[0]).deploy()
 
-    auction = await new Auction__factory(signers[0]).deploy()
-
-    factory = await new Factory__factory(signers[0]).deploy(
-      auction.address,
-      token.address
-    )
-
-    await auction.setFactory(factory.address)
+    factory = await new Factory__factory(signers[0]).deploy(token.address)
 
     daoViewer = await new DaoViewer__factory(signers[0]).deploy()
 
@@ -373,16 +362,14 @@ describe('DaoViewer', () => {
 
     token = await new Token__factory(signers[0]).deploy()
 
-    auction = await new Auction__factory(signers[0]).deploy()
-
-    factory = await new Factory__factory(signers[0]).deploy(
-      auction.address,
-      token.address
-    )
-
-    await auction.setFactory(factory.address)
+    factory = await new Factory__factory(signers[0]).deploy(token.address)
 
     daoViewer = await new DaoViewer__factory(signers[0]).deploy()
+
+    auction = await new Auction__factory(signers[0]).deploy()
+
+    await factory.setupAuction(auction.address)
+    await auction.setFactory(factory.address)
 
     expect(await daoViewer.getInvestInfo(factory.address)).to.eql([
       [],
@@ -418,7 +405,7 @@ describe('DaoViewer', () => {
       false,
       constants.Zero,
       constants.Zero,
-      constants.Zero,
+      // constants.Zero,
       constants.Zero
     ])
 
@@ -455,6 +442,9 @@ describe('DaoViewer', () => {
     ])
 
     expect(privateOffersInfo.slice(1)).to.eql([[constants.Zero], [], [], []])
+
+    
+   
 
     const timestamp = dayjs().unix()
 
@@ -501,14 +491,14 @@ describe('DaoViewer', () => {
     ).to.eql([
       true,
       true,
-      await Dao__factory.connect(await factory.daoAt(0), signers[0]).lp(),
+      await Dao__factory.connect(await factory.daoAt(0), signers[0]).govToken(),
       true,
       true,
       false,
       false,
       constants.Zero,
       constants.Zero,
-      constants.Zero,
+      // constants.Zero,
       constants.Zero
     ])
   })

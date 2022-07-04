@@ -13,23 +13,24 @@ contract DaoViewer {
         address dao;
         string daoName;
         string daoSymbol;
-        address lp;
-        string lpName;
-        string lpSymbol;
+
+        address govToken;
+        string name;
+        string symbol;
     }
 
     function getDao(address _dao) public view returns (DaoInfo memory) {
-        address lp = IDao(_dao).govToken();
+        address govToken = IDao(_dao).govToken();
 
-        if (lp == address(0)) {
+        if (govToken == address(0)) {
             return
                 DaoInfo({
                     dao: _dao,
                     daoName: IDao(_dao).name(),
                     daoSymbol: IDao(_dao).symbol(),
-                    lp: address(0),
-                    lpName: "",
-                    lpSymbol: ""
+                    govToken: address(0),
+                    name: "",
+                    symbol: ""
                 });
         }
 
@@ -38,9 +39,9 @@ contract DaoViewer {
                 dao: _dao,
                 daoName: IDao(_dao).name(),
                 daoSymbol: IDao(_dao).symbol(),
-                lp: lp,
-                lpName: IGovToken(lp).name(),
-                lpSymbol: IGovToken(lp).symbol()
+                govToken: govToken,
+                name: IGovToken(govToken).name(),
+                symbol: IGovToken(govToken).symbol()
             });
     }
 
@@ -181,14 +182,19 @@ contract DaoViewer {
     struct DaoConfiguration {
         bool gtMintable;
         bool gtBurnable;
-        address lpAddress;
-        bool lpMintable;
-        bool lpBurnable;
-        bool lpMintableStatusFrozen;
-        bool lpBurnableStatusFrozen;
+
+        address govTokenAddress;
+        
+        bool govTokenMintable;
+        bool govTokenBurnable;
+
+        bool govTokenMintableStatusFrozen;
+        bool govTokenBurnableStatusFrozen;
+        
         uint256 permittedLength;
         uint256 adaptersLength;
-        uint256 monthlyCost;
+        
+        // uint256 monthlyCost;
         uint256 numberOfPrivateOffers;
     }
 
@@ -197,21 +203,24 @@ contract DaoViewer {
         view
         returns (DaoConfiguration memory)
     {
-        address lp = IDao(_dao).govToken();
+        address govToken = IDao(_dao).govToken();
 
-        if (lp == address(0)) {
+        if (govToken == address(0)) {
             return
                 DaoConfiguration({
                     gtMintable: IDao(_dao).mintable(),
                     gtBurnable: IDao(_dao).burnable(),
-                    lpAddress: address(0),
-                    lpMintable: false,
-                    lpBurnable: false,
-                    lpMintableStatusFrozen: false,
-                    lpBurnableStatusFrozen: false,
+
+                    govTokenAddress: address(0),
+                    govTokenMintable: false,
+                    govTokenBurnable: false,
+                    govTokenMintableStatusFrozen: false,
+                    govTokenBurnableStatusFrozen: false,
+                    
                     permittedLength: IDao(_dao).numberOfPermitted(),
                     adaptersLength: IDao(_dao).numberOfAdapters(),
-                    monthlyCost: IFactory(_factory).monthlyCost(),
+                    
+                    // monthlyCost: IFactory(_factory).monthlyCost(),
                     numberOfPrivateOffers: 0
                 });
         } else {
@@ -219,14 +228,14 @@ contract DaoViewer {
                 DaoConfiguration({
                     gtMintable: IDao(_dao).mintable(),
                     gtBurnable: IDao(_dao).burnable(),
-                    lpAddress: lp,
-                    lpMintable: IGovToken(lp).mintable(),
-                    lpBurnable: IGovToken(lp).burnable(),
-                    lpMintableStatusFrozen: IGovToken(lp).mintableStatusFrozen(),
-                    lpBurnableStatusFrozen: IGovToken(lp).burnableStatusFrozen(),
+                    govTokenAddress: govToken,
+                    govTokenMintable: IGovToken(govToken).mintable(),
+                    govTokenBurnable: IGovToken(govToken).burnable(),
+                    govTokenMintableStatusFrozen: IGovToken(govToken).mintableStatusFrozen(),
+                    govTokenBurnableStatusFrozen: IGovToken(govToken).burnableStatusFrozen(),
                     permittedLength: IDao(_dao).numberOfPermitted(),
                     adaptersLength: IDao(_dao).numberOfAdapters(),
-                    monthlyCost: IFactory(_factory).monthlyCost(),
+                    // monthlyCost: IFactory(_factory).monthlyCost(),
                     numberOfPrivateOffers: IAuction(IFactory(_factory).auction()).numberOfPrivateOffers(_dao)
                 });
         }
@@ -262,9 +271,7 @@ contract DaoViewer {
         );
 
         for (uint256 i = 0; i < daosLength; i++) {
-            publicOffers[i] = IAuction(IFactory(_factory).auction()).publicOffers(
-                daos[i].dao
-            );
+            publicOffers[i] = IAuction(IFactory(_factory).auction()).publicOffers(daos[i].dao);
         }
 
         string[] memory symbols = new string[](daosLength);

@@ -36,8 +36,7 @@ contract LaunchpadModule is OwnableUpgradeable {
 
     mapping(address => uint256) public saleIndexes;
 
-    mapping(address => mapping(uint256 => mapping(address => bool)))
-        public bought;
+    mapping(address => mapping(uint256 => mapping(address => bool))) public bought;
 
     mapping(address => mapping(uint256 => uint256)) public totalBought;
 
@@ -149,24 +148,23 @@ contract LaunchpadModule is OwnableUpgradeable {
         emit CloseSale(msg.sender, saleIndexes[msg.sender] - 1);
     }
 
-    // function burnGovToken(address _dao, uint256 _id) external {
-    //     require(factory.containsDao(_dao), "LaunchpadModule: only for DAOs");
+    function burnGovToken(address _dao, uint256 _id) external {
+        require(factory.containsDao(_dao), "LaunchpadModule: only for DAOs");
 
-    //     IERC20Upgradeable lp = IERC20Upgradeable(IDao(_dao).govToken());
+        IERC20Upgradeable govToken = IERC20Upgradeable(IDao(_dao).govToken());
 
-    //     require(
-    //         lp.approve(address(privateExitModule), lp.balanceOf(address(this)))
-    //     );
+        require(
+            govToken.approve(address(privateExitModule), govToken.balanceOf(address(this)))
+        );
 
-    //     require(privateExitModule.privateExit(_dao, _id));
-    // }
+        require(privateExitModule.privateExit(_dao, _id));
+    }
 
     function buy(address _dao, uint256 _currencyAmount) external {
         uint256 saleIndex = saleIndexes[_dao];
 
         require(
-            !bought[_dao][saleIndex][msg.sender],
-            "LaunchpadModule: already bought"
+            !bought[_dao][saleIndex][msg.sender], "LaunchpadModule: already bought"
         );
 
         Sale storage sale = sales[_dao][saleIndex];
@@ -188,8 +186,7 @@ contract LaunchpadModule is OwnableUpgradeable {
 
         if (sale.isLimitedTotalSaleAmount) {
             require(
-                totalBought[_dao][saleIndex] + currencyAmount <=
-                    sale.totalSaleAmount,
+                totalBought[_dao][saleIndex] + currencyAmount <= sale.totalSaleAmount,
                 "LaunchpadModule: limit exceeded"
             );
         }
