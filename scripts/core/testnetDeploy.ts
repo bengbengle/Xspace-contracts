@@ -5,6 +5,8 @@ import {
   DaoViewer__factory,
   Factory__factory,
   Auction__factory,
+  ExitModule__factory,
+
 } from '../../typechain-types'
 
 dotenv.config()
@@ -13,6 +15,8 @@ async function main() {
   const signers = await ethers.getSigners()
 
   const auction = await new Auction__factory(signers[0]).deploy()
+
+  const exitModule = await new ExitModule__factory(signers[0]).deploy()
 
   await auction.deployed()
 
@@ -57,6 +61,16 @@ async function main() {
   } catch {
     console.log('Verification problem (Factory)')
   }
+
+  try {
+    await run('verify:verify', {
+      address: exitModule.address,
+      contract: 'contracts/modules/ExitModule.sol:ExitModule'
+    })
+  } catch {
+    console.log('Verification problem (ExitModule)')
+  }
+
 
   try {
     await run('verify:verify', {

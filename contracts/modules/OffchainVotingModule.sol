@@ -34,7 +34,7 @@ contract ExitModule is ReentrancyGuard {
         uint256[] tokenAmounts
     );
 
-    function createexitOffer(
+    function createExitOffer(
         address _recipient,
         uint256 _amount,
         uint256 _ethAmount,

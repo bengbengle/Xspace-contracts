@@ -28,8 +28,6 @@ describe('DaoViewer', () => {
 
   let factory: Factory
 
-  let token: Token
-
   let signers: SignerWithAddress[]
 
   let ownerAddress: string
@@ -39,6 +37,8 @@ describe('DaoViewer', () => {
   let auction: Auction 
 
   let daoViewer: DaoViewer
+
+  let token: Token
 
   it('Works Properly', async () => {
     signers = await ethers.getSigners()
@@ -189,8 +189,6 @@ describe('DaoViewer', () => {
     ).to.emit(auction, 'GovTokenCreated')
 
     expect(await firstDao.govToken()).to.not.eq(constants.AddressZero)
-
-    console.log('firstDao.govToken()::', await firstDao.govToken())
 
     govToken = GovToken__factory.connect(await firstDao.govToken(), signers[0])
 

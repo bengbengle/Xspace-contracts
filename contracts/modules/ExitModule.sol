@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
+
 import "../interfaces/IGovToken.sol";
 import "../interfaces/IDao.sol";
 
@@ -21,8 +22,7 @@ contract ExitModule is ReentrancyGuard {
         uint256[] tokenAmounts;
     }
 
-    mapping(address => mapping(uint256 => exitOffer))
-        public exitOffers; // exitOffers[dao][offerId]
+    mapping(address => mapping(uint256 => exitOffer)) public exitOffers; // exitOffers[dao][offerId]
 
     mapping(address => uint256) public numberOfPrivateOffers;
 
@@ -34,7 +34,7 @@ contract ExitModule is ReentrancyGuard {
         uint256[] tokenAmounts
     );
 
-    function createexitOffer(
+    function createExitOffer(
         address _recipient,
         uint256 _amount,
         uint256 _ethAmount,

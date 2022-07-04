@@ -24,8 +24,6 @@ describe('GovToken', () => {
 
   let factory: Factory
 
-  let token: Token
-
   let dao: Dao
 
   let lp: GovToken
@@ -33,6 +31,10 @@ describe('GovToken', () => {
   let signers: SignerWithAddress[]
 
   let ownerAddress: string
+
+  let token: Token
+
+  let govToken: GovToken
 
   beforeEach(async () => {
     signers = await ethers.getSigners()
@@ -108,21 +110,21 @@ describe('GovToken', () => {
 
     expect(await dao.govToken()).to.not.eq(constants.AddressZero)
 
-    lp = GovToken__factory.connect(await dao.govToken(), signers[0])
-
-    expect(await auction.govTokens(lp.address)).to.eq(true)
+    govToken = GovToken__factory.connect(await dao.govToken(), signers[0])
+    
+    expect(await auction.govTokens(govToken.address)).to.eq(true)
 
     expect(
       await Promise.all([
-        lp.name(),
-        lp.symbol(),
-        lp.totalSupply(),
-        lp.mintable(),
-        lp.burnable(),
-        lp.mintableStatusFrozen(),
-        lp.burnableStatusFrozen(),
-        lp.dao(),
-        lp.auction()
+        govToken.name(),
+        govToken.symbol(),
+        govToken.totalSupply(),
+        govToken.mintable(),
+        govToken.burnable(),
+        govToken.mintableStatusFrozen(),
+        govToken.burnableStatusFrozen(),
+        govToken.dao(),
+        govToken.auction()
       ])
     ).to.deep.eq([
       'EgorGovToken',
@@ -137,7 +139,7 @@ describe('GovToken', () => {
     ])
 
     VOTING = {
-      target: lp.address,
+      target: govToken.address,
       data: createData('changeMintable', ['bool'], [false]),
       value: 0,
       nonce: 0,
@@ -169,10 +171,10 @@ describe('GovToken', () => {
       )
     )
 
-    expect(await lp.mintable()).to.eq(false)
+    expect(await govToken.mintable()).to.eq(false)
 
     VOTING = {
-      target: lp.address,
+      target: govToken.address,
       data: createData('changeBurnable', ['bool'], [false]),
       value: 0,
       nonce: 0,
@@ -204,10 +206,10 @@ describe('GovToken', () => {
       )
     )
 
-    expect(await lp.burnable()).to.eq(false)
+    expect(await govToken.burnable()).to.eq(false)
 
     VOTING = {
-      target: lp.address,
+      target: govToken.address,
       data: createData('freezeMintingStatus'),
       value: 0,
       nonce: 0,
@@ -239,10 +241,10 @@ describe('GovToken', () => {
       )
     )
 
-    expect(await lp.mintableStatusFrozen()).to.eq(true)
+    expect(await govToken.mintableStatusFrozen()).to.eq(true)
 
     VOTING = {
-      target: lp.address,
+      target: govToken.address,
       data: createData('freezeBurningStatus'),
       value: 0,
       nonce: 0,
@@ -274,7 +276,7 @@ describe('GovToken', () => {
       )
     )
 
-    expect(await lp.burnableStatusFrozen()).to.eq(true)
+    expect(await govToken.burnableStatusFrozen()).to.eq(true)
   })
 
   it('Mint GovToken with Auction, then Burn', async () => {
@@ -317,7 +319,7 @@ describe('GovToken', () => {
       )
     ).to.emit(auction, 'GovTokenCreated')
 
-    lp = GovToken__factory.connect(await dao.govToken(), signers[0])
+    govToken = GovToken__factory.connect(await dao.govToken(), signers[0])
 
     const goldToken = await new Token__factory(signers[0]).deploy()
     const silverToken = await new Token__factory(signers[0]).deploy()
@@ -368,9 +370,10 @@ describe('GovToken', () => {
     expect(
       (
         await Promise.all([
-          lp.balanceOf(ownerAddress),
-          lp.balanceOf(friendAddress),
-          lp.balanceOf(dao.address),
+          govToken.balanceOf(ownerAddress),
+          govToken.balanceOf(friendAddress),
+          govToken.balanceOf(dao.address),
+          
           goldToken.balanceOf(ownerAddress),
           goldToken.balanceOf(friendAddress),
           goldToken.balanceOf(dao.address)
@@ -422,9 +425,9 @@ describe('GovToken', () => {
     expect(
       (
         await Promise.all([
-          lp.balanceOf(ownerAddress),
-          lp.balanceOf(friendAddress),
-          lp.balanceOf(dao.address),
+          govToken.balanceOf(ownerAddress),
+          govToken.balanceOf(friendAddress),
+          govToken.balanceOf(dao.address),
           goldToken.balanceOf(ownerAddress),
           goldToken.balanceOf(friendAddress),
           goldToken.balanceOf(dao.address),
@@ -445,7 +448,7 @@ describe('GovToken', () => {
     )
 
     await expect(
-      await lp
+      await govToken
         .connect(signers[1])
         .burn(15, [goldToken.address, silverToken.address], [], [])
     ).to.changeEtherBalances(
@@ -459,9 +462,9 @@ describe('GovToken', () => {
     expect(
       (
         await Promise.all([
-          lp.balanceOf(ownerAddress),
-          lp.balanceOf(friendAddress),
-          lp.balanceOf(dao.address),
+          govToken.balanceOf(ownerAddress),
+          govToken.balanceOf(friendAddress),
+          govToken.balanceOf(dao.address),
           goldToken.balanceOf(ownerAddress),
           goldToken.balanceOf(friendAddress),
           goldToken.balanceOf(dao.address),

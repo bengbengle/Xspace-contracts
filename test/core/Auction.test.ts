@@ -31,8 +31,6 @@ describe('Auction', () => {
 
   let factory: Factory
 
-  let token: Token
-
   let dao: Dao
 
   let signers: SignerWithAddress[]
@@ -46,7 +44,7 @@ describe('Auction', () => {
 
     ownerAddress = signers[0].address
 
-    token = await new Token__factory(signers[0]).deploy()
+    // token = await new Token__factory(signers[0]).deploy()
 
     auction = await new Auction__factory(signers[0]).deploy()
 

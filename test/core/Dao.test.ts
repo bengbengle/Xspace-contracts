@@ -29,9 +29,9 @@ describe('Dao', () => {
 
   let factory: Factory
 
-  let token: Token
-
   let dao: Dao
+  
+  let token: Token 
 
   let signers: SignerWithAddress[]
 

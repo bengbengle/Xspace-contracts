@@ -19,7 +19,7 @@
 
 //   let factory: Factory
 
-//   let token: Token
+//   
 
 //   let signers: SignerWithAddress[]
 

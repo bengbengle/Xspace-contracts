@@ -1,243 +1,248 @@
-// import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
-// import { expect } from 'chai'
-// import { constants } from 'ethers'
-// import { parseEther } from 'ethers/lib/utils'
-// import { ethers } from 'hardhat'
+import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
+import { expect } from 'chai'
+import { constants } from 'ethers'
+import { parseEther } from 'ethers/lib/utils'
+import { ethers } from 'hardhat'
 
-// import {
-//   Dao,
-//   Dao__factory,
-//   Factory,
-//   Factory__factory,
-//   LP,
-//   LP__factory,
-//   NamedToken__factory,
-//   ExitModule,
-//   ExitModule__factory,
-//   Auction,
-//   Auction__factory,
-//   Token,
-//   Token__factory
-// } from '../../typechain-types'
-// import { executeTx } from '../utils'
+import {
+  Dao,
+  Dao__factory,
+  Factory,
+  Factory__factory,
+  
+  GovToken,
+  GovToken__factory,
+  
+  NamedToken__factory,
 
-// describe('ExitModule', () => {
-//   let auction: Auction
+  ExitModule,
+  ExitModule__factory,
+  
+  Auction,
+  Auction__factory,
+  Token,
+  Token__factory
+} from '../../typechain-types'
+import { executeTx } from '../utils'
 
-//   let factory: Factory
+describe('ExitModule', () => {
+  let auction: Auction
 
-//   let token: Token
+  let factory: Factory
 
-//   let dao: Dao
+  let dao: Dao
 
-//   let lp: LP
+  let govToken: GovToken
 
-//   let ExitModule: ExitModule
+  let ExitModule: ExitModule
 
-//   let signers: SignerWithAddress[]
+  let signers: SignerWithAddress[]
 
-//   let ownerAddress: string
+  let ownerAddress: string
 
-//   beforeEach(async () => {
-//     signers = await ethers.getSigners()
+  beforeEach(async () => {
+    signers = await ethers.getSigners()
 
-//     ownerAddress = signers[0].address
+    ownerAddress = signers[0].address
 
-//     token = await new Token__factory(signers[0]).deploy()
+    // token = await new Token__factory(signers[0]).deploy()
 
-//     auction = await new Auction__factory(signers[0]).deploy()
+    auction = await new Auction__factory(signers[0]).deploy()
 
-//     factory = await new Factory__factory(signers[0]).deploy()
+    factory = await new Factory__factory(signers[0]).deploy()
 
-//     await auction.setFactory(factory.address)
+    await auction.setFactory(factory.address)
 
-//     const DAO_CONFIG = {
-//       daoName: 'TestDAO',
-//       daoSymbol: 'TDAO',
-//       quorum: 51,
-//       partners: [ownerAddress],
-//       shares: [10]
-//     }
+    await factory.setupAuction(auction.address)
 
-//     await factory.create(
-//       DAO_CONFIG.daoName,
-//       DAO_CONFIG.daoSymbol,
-//       DAO_CONFIG.quorum,
-//       DAO_CONFIG.partners,
-//       DAO_CONFIG.shares
-//     )
 
-//     dao = Dao__factory.connect(await factory.daoAt(0), signers[0])
+    const DAO_CONFIG = {
+      daoName: 'TestDAO',
+      daoSymbol: 'TDAO',
+      quorum: 51,
+      partners: [ownerAddress],
+      shares: [10]
+    }
 
-//     ExitModule = await new ExitModule__factory(
-//       signers[0]
-//     ).deploy()
+    await factory.create(
+      DAO_CONFIG.daoName,
+      DAO_CONFIG.daoSymbol,
+      DAO_CONFIG.quorum,
+      DAO_CONFIG.partners,
+      DAO_CONFIG.shares
+    )
 
-//     await executeTx(
-//       dao.address,
-//       auction.address,
-//       'createGovToken',
-//       ['string', 'string'],
-//       ['EgorLP', 'ELP'],
-//       0,
-//       signers[0]
-//     )
+    dao = Dao__factory.connect(await factory.daoAt(0), signers[0])
 
-//     lp = LP__factory.connect(await dao.govToken(), signers[0])
-//   })
+    ExitModule = await new ExitModule__factory(
+      signers[0]
+    ).deploy()
 
-//   it('Create, Exit, Disable, Read', async () => {
-//     const friendAddress = signers[1].address
+    await executeTx(
+      dao.address,
+      auction.address,
+      'createGovToken',
+      ['string', 'string'],
+      ['EgorLP', 'ELP'],
+      0,
+      signers[0]
+    )
 
-//     const usdc = await new NamedToken__factory(signers[0]).deploy(
-//       'USDC',
-//       'USDC'
-//     )
+    govToken = GovToken__factory.connect(await dao.govToken(), signers[0])
+  })
 
-//     const btc = await new NamedToken__factory(signers[0]).deploy('BTC', 'BTC')
+  it('Create, Exit, Disable, Read', async () => {
+    const friendAddress = signers[1].address
 
-//     await executeTx(
-//       dao.address,
-//       ExitModule.address,
-//       'createexitOffer',
-//       ['address', 'uint256', 'uint256', 'address[]', 'uint256[]'],
-//       [
-//         friendAddress,
-//         parseEther('1'),
-//         parseEther('0.07'),
-//         [usdc.address, btc.address],
-//         [parseEther('0.9'), parseEther('1.3')]
-//       ],
-//       0,
-//       signers[0]
-//     )
+    const usdc = await new NamedToken__factory(signers[0]).deploy(
+      'USDC',
+      'USDC'
+    )
 
-//     await expect(
-//       ExitModule.connect(signers[1]).exit(dao.address, 0)
-//     ).to.be.revertedWith('ERC20: insufficient allowance')
+    const btc = await new NamedToken__factory(signers[0]).deploy('BTC', 'BTC')
 
-//     expect(await lp.totalSupply()).to.eql(constants.Zero)
+    await executeTx(
+      dao.address,
+      ExitModule.address,
+      'createExitOffer',
+      ['address', 'uint256', 'uint256', 'address[]', 'uint256[]'],
+      [
+        friendAddress,
+        parseEther('1'),
+        parseEther('0.07'),
+        [usdc.address, btc.address],
+        [parseEther('0.9'), parseEther('1.3')]
+      ],
+      0,
+      signers[0]
+    )
 
-//     await executeTx(
-//       dao.address,
-//       auction.address,
-//       'createPrivateOffer',
-//       ['address', 'address', 'uint256', 'uint256'],
-//       [friendAddress, usdc.address, 0, parseEther('2')],
-//       0,
-//       signers[0]
-//     )
+    await expect(
+      ExitModule.connect(signers[1]).exit(dao.address, 0)
+    ).to.be.revertedWith('ERC20: insufficient allowance')
 
-//     await auction.connect(signers[1]).buyPrivateOffer(dao.address, 0)
+    expect(await govToken.totalSupply()).to.eql(constants.Zero)
 
-//     expect(await lp.balanceOf(friendAddress))
-//       .to.eql(parseEther('2'))
-//       .to.eql(await lp.totalSupply())
+    await executeTx(
+      dao.address,
+      auction.address,
+      'createPrivateOffer',
+      ['address', 'address', 'uint256', 'uint256'],
+      [friendAddress, usdc.address, 0, parseEther('2')],
+      0,
+      signers[0]
+    )
 
-//     await expect(
-//       ExitModule.connect(signers[1]).exit(dao.address, 0)
-//     ).to.be.revertedWith('ERC20: insufficient allowance')
+    await auction.connect(signers[1]).buyPrivateOffer(dao.address, 0)
 
-//     await lp
-//       .connect(signers[1])
-//       .approve(ExitModule.address, parseEther('999'))
+    expect(await govToken.balanceOf(friendAddress))
+      .to.eql(parseEther('2'))
+      .to.eql(await govToken.totalSupply())
 
-//     await expect(
-//       ExitModule.connect(signers[1]).exit(dao.address, 0)
-//     ).to.be.revertedWith('DAO: only for permitted')
+    await expect(
+      ExitModule.connect(signers[1]).exit(dao.address, 0)
+    ).to.be.revertedWith('ERC20: insufficient allowance')
 
-//     await executeTx(
-//       dao.address,
-//       dao.address,
-//       'addPermitted',
-//       ['address'],
-//       [ExitModule.address],
-//       0,
-//       signers[0]
-//     )
+    await govToken
+      .connect(signers[1])
+      .approve(ExitModule.address, parseEther('999'))
 
-//     expect(await dao.containsPermitted(ExitModule.address)).to.eq(true)
+    await expect(
+      ExitModule.connect(signers[1]).exit(dao.address, 0)
+    ).to.be.revertedWith('DAO: only for permitted')
 
-//     await expect(
-//       ExitModule.connect(signers[1]).exit(dao.address, 0)
-//     ).to.be.revertedWith('ERC20: transfer amount exceeds balance')
+    await executeTx(
+      dao.address,
+      dao.address,
+      'addPermitted',
+      ['address'],
+      [ExitModule.address],
+      0,
+      signers[0]
+    )
 
-//     await usdc.transfer(dao.address, parseEther('1'))
-//     await btc.transfer(dao.address, parseEther('2'))
+    expect(await dao.containsPermitted(ExitModule.address)).to.eq(true)
 
-//     await expect(
-//       ExitModule.connect(signers[1]).exit(dao.address, 0)
-//     ).to.be.revertedWith('Address: insufficient balance')
+    await expect(
+      ExitModule.connect(signers[1]).exit(dao.address, 0)
+    ).to.be.revertedWith('ERC20: transfer amount exceeds balance')
 
-//     await signers[0].sendTransaction({
-//       to: dao.address,
-//       value: parseEther('10')
-//     })
+    await usdc.transfer(dao.address, parseEther('1'))
+    await btc.transfer(dao.address, parseEther('2'))
 
-//     await executeTx(
-//       dao.address,
-//       lp.address,
-//       'changeBurnable',
-//       ['bool'],
-//       [false],
-//       0,
-//       signers[0]
-//     )
+    await expect(
+      ExitModule.connect(signers[1]).exit(dao.address, 0)
+    ).to.be.revertedWith('Address: insufficient balance')
 
-//     await expect(
-//       await ExitModule.connect(signers[1]).exit(dao.address, 0)
-//     ).to.changeEtherBalances(
-//       [dao, signers[1], ExitModule],
-//       [parseEther('-0.07'), parseEther('0.07'), parseEther('0')]
-//     )
+    await signers[0].sendTransaction({
+      to: dao.address,
+      value: parseEther('10')
+    })
 
-//     expect(await ethers.provider.getBalance(ExitModule.address)).to.eql(
-//       constants.Zero
-//     )
+    await executeTx(
+      dao.address,
+      govToken.address,
+      'changeBurnable',
+      ['bool'],
+      [false],
+      0,
+      signers[0]
+    )
 
-//     expect(await ethers.provider.getBalance(dao.address)).to.eql(
-//       parseEther('9.93')
-//     )
+    await expect(
+      await ExitModule.connect(signers[1]).exit(dao.address, 0)
+    ).to.changeEtherBalances(
+      [dao, signers[1], ExitModule],
+      [parseEther('-0.07'), parseEther('0.07'), parseEther('0')]
+    )
 
-//     expect(await usdc.balanceOf(friendAddress)).to.eql(parseEther('0.9'))
-//     expect(await btc.balanceOf(friendAddress)).to.eql(parseEther('1.3'))
+    expect(await ethers.provider.getBalance(ExitModule.address)).to.eql(
+      constants.Zero
+    )
 
-//     // Create and Disable
+    expect(await ethers.provider.getBalance(dao.address)).to.eql(
+      parseEther('9.93')
+    )
 
-//     await executeTx(
-//       dao.address,
-//       ExitModule.address,
-//       'createexitOffer',
-//       ['address', 'uint256', 'uint256', 'address[]', 'uint256[]'],
-//       [
-//         friendAddress,
-//         parseEther('1'),
-//         parseEther('0.07'),
-//         [usdc.address, btc.address],
-//         [parseEther('0.9'), parseEther('1.3')]
-//       ],
-//       0,
-//       signers[0]
-//     )
+    expect(await usdc.balanceOf(friendAddress)).to.eql(parseEther('0.9'))
+    expect(await btc.balanceOf(friendAddress)).to.eql(parseEther('1.3'))
 
-//     expect(
-//       (await ExitModule.exitOffers(dao.address, 1)).isActive
-//     ).to.eq(true)
+    // Create and Disable
 
-//     await executeTx(
-//       dao.address,
-//       ExitModule.address,
-//       'disableExitOffer',
-//       ['uint256'],
-//       [1],
-//       0,
-//       signers[0]
-//     )
+    await executeTx(
+      dao.address,
+      ExitModule.address,
+      'createExitOffer',
+      ['address', 'uint256', 'uint256', 'address[]', 'uint256[]'],
+      [
+        friendAddress,
+        parseEther('1'),
+        parseEther('0.07'),
+        [usdc.address, btc.address],
+        [parseEther('0.9'), parseEther('1.3')]
+      ],
+      0,
+      signers[0]
+    )
 
-//     expect(
-//       (await ExitModule.exitOffers(dao.address, 1)).isActive
-//     ).to.eq(false)
+    expect(
+      (await ExitModule.exitOffers(dao.address, 1)).isActive
+    ).to.eq(true)
 
-//     expect((await ExitModule.getOffers(dao.address)).length).to.eq(2)
-//   })
-// })
+    await executeTx(
+      dao.address,
+      ExitModule.address,
+      'disableExitOffer',
+      ['uint256'],
+      [1],
+      0,
+      signers[0]
+    )
+
+    expect(
+      (await ExitModule.exitOffers(dao.address, 1)).isActive
+    ).to.eq(false)
+
+    expect((await ExitModule.getOffers(dao.address)).length).to.eq(2)
+  })
+})

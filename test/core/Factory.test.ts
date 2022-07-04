@@ -20,12 +20,12 @@ describe('Factory', () => {
 
   let factory: Factory
 
-  let token: Token
-
   let signers: SignerWithAddress[]
 
   let ownerAddress: string
 
+  let token: Token
+  
   beforeEach(async () => {
     signers = await ethers.getSigners()
 

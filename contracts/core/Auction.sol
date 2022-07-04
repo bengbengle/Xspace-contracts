@@ -21,7 +21,7 @@ contract Auction is ReentrancyGuard {
     struct PublicOffer {
         bool isActive;
         address currency;
-        uint256 rate; // amount = currencyAmount / rate. For example: 1 LP = 100 USDT. 530 USDT -> 530/100 = 5.3 LP
+        uint256 rate; // amount = currencyAmount / rate. For example: 1 govToken = 100 USDT. 530 USDT -> 530/100 = 5.3 LP
     }
 
     mapping(address => PublicOffer) public publicOffers; // publicOffers[dao]

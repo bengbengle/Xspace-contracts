@@ -14,7 +14,7 @@
 //   LaunchpadModule,
 //   LaunchpadModule__factory,
 //   LP,
-//   LP__factory,
+//   GovToken__factory,
 //   ExitModule,
 //   ExitModule__factory,
 //   // Auction,
@@ -39,7 +39,7 @@
 
 //   let usdc: Token
 
-//   let lp: LP
+//   let govToken: GovToken
 
 //   beforeEach(async () => {
 //     signer = (await ethers.getSigners())[0]
@@ -94,7 +94,7 @@
 //         signer
 //       )
 
-//       lp = LP__factory.connect(await dao.govToken(), signer)
+//       govToken = GovToken__factory.connect(await dao.govToken(), signer)
 
 //       await executeTxRaw(
 //         dao.address,
@@ -165,7 +165,7 @@
 //         dao.address,
 //         ExitModule.address,
 //         ExitModule__factory.createInterface().encodeFunctionData(
-//           'createexitOffer',
+//           'createExitOffer',
 //           [launchpad.address, parseEther('12'), constants.Zero, [], []]
 //         ),
 //         0,

@@ -17,7 +17,7 @@ contract LaunchpadModule is OwnableUpgradeable {
 
     IFactory public factory;
     IAuction public auction;
-    IExitModule public ExitModule;
+    IExitModule public exitModule;
 
     struct Sale {
         address currency;
@@ -75,11 +75,11 @@ contract LaunchpadModule is OwnableUpgradeable {
     function setCoreAddresses(
         IFactory _factory,
         IAuction _auction,
-        IExitModule _ExitModule
+        IExitModule _exitModule
     ) external onlyOwner {
         factory = _factory;
         auction = _auction;
-        ExitModule = _ExitModule;
+        exitModule = _exitModule;
     }
 
     modifier onlyDao() {
@@ -154,10 +154,10 @@ contract LaunchpadModule is OwnableUpgradeable {
         IERC20Upgradeable govToken = IERC20Upgradeable(IDao(_dao).govToken());
 
         require(
-            govToken.approve(address(ExitModule), govToken.balanceOf(address(this)))
+            govToken.approve(address(exitModule), govToken.balanceOf(address(this)))
         );
 
-        require(ExitModule.exit(_dao, _id));
+        require(exitModule.exit(_dao, _id));
     }
 
     function buy(address _dao, uint256 _currencyAmount) external {
