@@ -1,8 +1,8 @@
 {
-  "name": "xdao-contracts",
-  "description": "Smart contracts of XDAO",
+  "name": "xspace-contracts",
+  "description": "Smart contracts of xspace",
   "license": "BUSL-1.1",
-  "homepage": "https://xdao.app",
+  "homepage": "",
   "scripts": {
     "clean": "rm artifacts/ -rf && rm typechain-types/ -rf && rm cache/ -rf && rm artifacts/ -rf",
     "compile": "hardhat compile",

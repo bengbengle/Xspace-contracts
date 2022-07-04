@@ -1,31 +1,29 @@
-1. 工厂合约：
+1. 工厂合约 （√）
 
 2. 资金池合约：
-    可接受， 可提取 ERC20
-    可接受， 可提取 ETH     
-    可接受， 可提取 ERC721 （·）
-    可接受， 可提取 ERC1155 
-    可发送 transtions 与 其他合约 交互
+    接受， 提取 ERC20 √
+    接受， 提取 ETH   √  
+    接受， 提取 ERC721 （√）
+    接受， 提取 ERC1155 
+    发送 transtions 与 其他合约 交互
 
-3. verify-offchain-voting Adapter 模块 合约：
-    设置 space 绑定
+3. verify-offchain-voting Adapter 模块 合约： 
+    设置 space 绑定 
     服务端 对结果 签名， 合约验证签名 （·）
     验证签名
     执行 提案 tx
 
-
-5. 治理币
-    支持 erc20
-    支持 ERC721
+4. 设置治理币 
+    支持 erc20 （√）
+    支持 ERC721 （√）
 
     可铸造
     可销毁
 
-4. auction 合约： 
+5. auction 合约： 
     公募
     私募
     白名单预售（折扣价）
     荷兰式拍卖
 
-
-
+6. 数据查看 帮助合约 

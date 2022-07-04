@@ -481,7 +481,7 @@ describe('Dao', () => {
 
     expect(await dao.govToken()).to.not.eq(constants.AddressZero)
 
-    const lp = GovToken__factory.connect(await dao.govToken(), signers[0])
+    const govToken = GovToken__factory.connect(await dao.govToken(), signers[0])
 
     const goldToken = await new Token__factory(signers[0]).deploy()
 
@@ -522,7 +522,7 @@ describe('Dao', () => {
 
     await auction.buyPrivateOffer(dao.address, 0)
 
-    await lp.burn(0, [], [adapter.address], [constants.AddressZero])
+    await govToken.burn(0, [], [adapter.address], [constants.AddressZero])
 
     VOTING = {
       target: dao.address,
@@ -563,7 +563,7 @@ describe('Dao', () => {
     expect(await dao.getPermitted()).to.be.an('array').that.is.empty
 
     await expect(
-      lp.burn(0, [], [adapter.address], [constants.AddressZero])
+      govToken.burn(0, [], [adapter.address], [constants.AddressZero])
     ).to.be.revertedWith('DAO: this is not an adapter')
   })
 
@@ -751,44 +751,44 @@ describe('Dao', () => {
     )
   })
 
-  it('DAO did not Pay for the Subscription', async () => {
-    await factory.changeMonthlyCost(1)
+  // it('DAO did not Pay for the Subscription', async () => {
+  //   await factory.changeMonthlyCost(1)
 
-    const timestamp = dayjs().unix()
+  //   const timestamp = dayjs().unix()
 
-    const VOTING = {
-      target: dao.address,
-      data: createData('addPermitted', ['address'], [ownerAddress]),
-      value: 0,
-      nonce: 0,
-      timestamp
-    }
+  //   const VOTING = {
+  //     target: dao.address,
+  //     data: createData('addPermitted', ['address'], [ownerAddress]),
+  //     value: 0,
+  //     nonce: 0,
+  //     timestamp
+  //   }
 
-    const txHash = createTxHash(
-      dao.address,
-      VOTING.target,
-      VOTING.data,
-      VOTING.value,
-      VOTING.nonce,
-      VOTING.timestamp,
-      1337
-    )
+  //   const txHash = createTxHash(
+  //     dao.address,
+  //     VOTING.target,
+  //     VOTING.data,
+  //     VOTING.value,
+  //     VOTING.nonce,
+  //     VOTING.timestamp,
+  //     1337
+  //   )
 
-    const sig = await signers[0].signMessage(txHash)
+  //   const sig = await signers[0].signMessage(txHash)
 
-    expect(verifyMessage(txHash, sig)).to.eq(ownerAddress)
+  //   expect(verifyMessage(txHash, sig)).to.eq(ownerAddress)
 
-    await expect(
-      dao.execute(
-        VOTING.target,
-        VOTING.data,
-        VOTING.value,
-        VOTING.nonce,
-        VOTING.timestamp,
-        [sig]
-      )
-    ).to.be.revertedWith('DAO: subscription not paid')
-  })
+  //   await expect(
+  //     dao.execute(
+  //       VOTING.target,
+  //       VOTING.data,
+  //       VOTING.value,
+  //       VOTING.nonce,
+  //       VOTING.timestamp,
+  //       [sig]
+  //     )
+  //   ).to.be.revertedWith('DAO: subscription not paid')
+  // })
 
   it('Revert Adapter Duplicates and Length Mismatch', async () => {
     const adapter = await new Adapter__factory(signers[0]).deploy()
@@ -861,7 +861,7 @@ describe('Dao', () => {
 
     expect(await dao.govToken()).to.not.eq(constants.AddressZero)
 
-    const lp = GovToken__factory.connect(await dao.govToken(), signers[0])
+    const govToken = GovToken__factory.connect(await dao.govToken(), signers[0])
 
     const goldToken = await new Token__factory(signers[0]).deploy()
 
@@ -903,7 +903,7 @@ describe('Dao', () => {
     await auction.buyPrivateOffer(dao.address, 0)
 
     await expect(
-      lp.burn(
+      govToken.burn(
         0,
         [],
         [adapter.address, adapter.address],
@@ -912,7 +912,7 @@ describe('Dao', () => {
     ).to.be.revertedWith('DAO: duplicates are prohibited (adapters)')
 
     await expect(
-      lp.burn(
+      govToken.burn(
         0,
         [],
         [adapter.address],

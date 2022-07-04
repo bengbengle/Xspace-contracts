@@ -26,7 +26,7 @@ contract Dao is ReentrancyGuard, ERC20 {
     // These addresses can rule without voting
     EnumerableSet.AddressSet private permitted;
 
-    // These contracts help burn LP's
+    // These contracts help burn GovToken's
     EnumerableSet.AddressSet private adapters;
 
     // Factory Address
@@ -138,7 +138,7 @@ contract Dao is ReentrancyGuard, ERC20 {
         bytes calldata _data,
         uint256 _value
     ) external nonReentrant returns (bool) {
-        require(checkSubscription(), "DAO: subscription not paid");
+        // require(checkSubscription(), "DAO: subscription not paid");
 
         require(permitted.contains(msg.sender), "DAO: only for permitted");
 
@@ -175,7 +175,7 @@ contract Dao is ReentrancyGuard, ERC20 {
         uint256 _timestamp,
         bytes[] memory _sigs
     ) external nonReentrant returns (bool) {
-        require(checkSubscription(), "DAO: subscription not paid");
+        // require(checkSubscription(), "DAO: subscription not paid");
 
         require(balanceOf(msg.sender) > 0, "DAO: only for members");
 
@@ -280,17 +280,17 @@ contract Dao is ReentrancyGuard, ERC20 {
         return true;
     }
 
-    function checkSubscription() public view returns (bool) {
-        if (
-            IFactory(factory).monthlyCost() > 0 && IFactory(factory).subscriptions(address(this)) < block.timestamp
-        ) {
-            return false;
-        }
+    // function checkSubscription() public view returns (bool) {
+    //     if (
+    //         IFactory(factory).monthlyCost() > 0 && IFactory(factory).subscriptions(address(this)) < block.timestamp
+    //     ) {
+    //         return false;
+    //     }
 
-        return true;
-    }
+    //     return true;
+    // }
 
-     /*----BURN LP TOKENS---------------------------------*/
+     /*----BURN Gov TOKENS---------------------------------*/
 
     function burnGovToken(
         address _recipient,
@@ -304,14 +304,13 @@ contract Dao is ReentrancyGuard, ERC20 {
         require(msg.sender == govToken, "DAO: only for GovToken");
 
         require(
-            !_hasDuplicate(_tokens),
-            "DAO: duplicates are prohibited (tokens)"
+            !_hasDuplicate(_tokens), "DAO: duplicates are prohibited (tokens)"
         );
 
         for (uint256 i = 0; i < _tokens.length; i++) {
             require(
                 _tokens[i] != govToken && _tokens[i] != address(this),
-                "DAO: LP and GT cannot be part of a share"
+                "DAO: GOV Token and GT cannot be part of a share"
             );
         }
 
@@ -375,6 +374,43 @@ contract Dao is ReentrancyGuard, ERC20 {
 
     /*----GT MANAGEMENT----------------------------------*/
 
+    
+    function addOwner(address _to)
+        external
+        onlyDao
+        returns (bool)
+    {
+        require(mintable, "DAO: GT minting is disabled");
+        require(balanceOf(_to) == 0, "DAO: The Owner is in the DAO Space");
+        _mint(_to, 1);
+        return true;
+    }
+
+    function deleteOwner(address _to)
+        external
+        onlyDao
+        returns (bool)
+    {
+        require(burnable, "DAO: GT burning is disabled");
+        require(balanceOf(_to) > 0, "DAO: The Owner is not in the DAO Space");
+
+        _burn(_to, balanceOf(_to));
+        return true;
+    }
+
+    function updateOwner(address _sender, address _recipient) 
+        external 
+        onlyDao 
+        returns (bool)
+    {
+        require(balanceOf(_sender) > 0 &&  balanceOf(_recipient) == 0 , "DAO: The Sender is not in the DAO Space");
+
+        _transfer(_sender, _recipient, balanceOf(_recipient));
+
+        return true;
+    }
+    
+
     function mint(address _to, uint256 _amount)
         external
         onlyDao
@@ -384,6 +420,7 @@ contract Dao is ReentrancyGuard, ERC20 {
         _mint(_to, _amount);
         return true;
     }
+
 
     function burn(address _to, uint256 _amount)
         external
@@ -465,7 +502,7 @@ contract Dao is ReentrancyGuard, ERC20 {
 
         return true;
     }
-
+    
     /*----VIEW FUNCTIONS---------------------------------*/
 
     function executedVotingByIndex(uint256 _index)
@@ -541,15 +578,15 @@ contract Dao is ReentrancyGuard, ERC20 {
     }
 
     /*----PURE FUNCTIONS---------------------------------*/
-
-    function _hasDuplicate(address[] memory A) internal pure returns (bool) {
-        if (A.length <= 1) {
+    
+    function _hasDuplicate(address[] memory _list) internal pure returns (bool) {
+        if (_list.length <= 1) {
             return false;
         } else {
-            for (uint256 i = 0; i < A.length - 1; i++) {
-                address current = A[i];
-                for (uint256 j = i + 1; j < A.length; j++) {
-                    if (current == A[j]) {
+            for (uint256 i = 0; i < _list.length - 1; i++) {
+                address current = _list[i];
+                for (uint256 j = i + 1; j < _list.length; j++) {
+                    if (current == _list[j]) {
                         return true;
                     }
                 }
@@ -560,7 +597,7 @@ contract Dao is ReentrancyGuard, ERC20 {
     }
 
     function transfer(address, uint256) public pure override returns (bool) {
-        revert("GT: transfer is prohibited");
+        revert("DAO: transfer is prohibited");
     }
 
     function transferFrom(
@@ -568,7 +605,7 @@ contract Dao is ReentrancyGuard, ERC20 {
         address,
         uint256
     ) public pure override returns (bool) {
-        revert("GT: transferFrom is prohibited");
+        revert("DAO: transferFrom is prohibited");
     }
 
     /*----RECEIVE ETH------------------------------------*/

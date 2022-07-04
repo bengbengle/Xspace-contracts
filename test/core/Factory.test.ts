@@ -72,44 +72,44 @@ describe('Factory', () => {
       .of.length(1)
   })
 
-  it('Subscription', async () => {
-    expect(await factory.monthlyCost()).to.eq(0)
-    expect(await factory.freeTrial()).to.eq(0)
-  })
+  // it('Subscription', async () => {
+  //   expect(await factory.monthlyCost()).to.eq(0)
+  //   expect(await factory.freeTrial()).to.eq(0)
+  // })
 
-  it('Change Subscription', async () => {
-    await expect(
-      factory.connect(signers[1]).changeMonthlyCost(1)
-    ).to.be.revertedWith('Ownable: caller is not the owner')
+  // it('Change Subscription', async () => {
+  //   await expect(
+  //     factory.connect(signers[1]).changeMonthlyCost(1)
+  //   ).to.be.revertedWith('Ownable: caller is not the owner')
 
-    await expect(
-      factory.connect(signers[1]).changeFreeTrial(1)
-    ).to.be.revertedWith('Ownable: caller is not the owner')
+  //   await expect(
+  //     factory.connect(signers[1]).changeFreeTrial(1)
+  //   ).to.be.revertedWith('Ownable: caller is not the owner')
 
-    await factory.changeMonthlyCost(10)
+  //   await factory.changeMonthlyCost(10)
 
-    expect(await factory.monthlyCost()).to.eq(10)
+  //   expect(await factory.monthlyCost()).to.eq(10)
 
-    await factory.changeFreeTrial(15)
+  //   await factory.changeFreeTrial(15)
 
-    expect(await factory.freeTrial()).to.eq(15)
-  })
+  //   expect(await factory.freeTrial()).to.eq(15)
+  // })
 
-  it('Change Free Trial', async () => {
-    expect(await factory.freeTrial()).to.eq(0)
+  // it('Change Free Trial', async () => {
+  //   expect(await factory.freeTrial()).to.eq(0)
 
-    await factory.changeFreeTrial(86400)
+  //   await factory.changeFreeTrial(86400)
 
-    expect(await factory.freeTrial()).to.eq(86400)
+  //   expect(await factory.freeTrial()).to.eq(86400)
 
-    await factory.create('LongTrial', 'LONGTRIAL', 100, [ownerAddress], [1])
+  //   await factory.create('LongTrial', 'LONGTRIAL', 100, [ownerAddress], [1])
 
-    const timestamp = dayjs().unix()
+  //   const timestamp = dayjs().unix()
 
-    expect((await factory.subscriptions(await factory.daoAt(0))).toNumber())
-      .to.lessThan(timestamp + 120 + 86400)
-      .to.greaterThan(timestamp + 86400)
-  })
+  //   expect((await factory.subscriptions(await factory.daoAt(0))).toNumber())
+  //     .to.lessThan(timestamp + 120 + 86400)
+  //     .to.greaterThan(timestamp + 86400)
+  // })
 
   describe('With DAO', () => {
     let dao: Dao
@@ -134,50 +134,50 @@ describe('Factory', () => {
       dao = Dao__factory.connect(await factory.daoAt(0), signers[0])
     })
 
-    it('Pay Subscription', async () => {
-      expect(await token.balanceOf(ownerAddress)).to.eq(parseEther('100'))
+  //   it('Pay Subscription', async () => {
+  //     expect(await token.balanceOf(ownerAddress)).to.eq(parseEther('100'))
 
-      await factory.transferOwnership(signers[1].address)
+  //     await factory.transferOwnership(signers[1].address)
 
-      let timestamp = dayjs().unix()
+  //     let timestamp = dayjs().unix()
 
-      expect((await factory.subscriptions(dao.address)).toNumber())
-        .to.lessThanOrEqual(timestamp + 120)
-        .to.greaterThanOrEqual(timestamp)
+  //     expect((await factory.subscriptions(dao.address)).toNumber())
+  //       .to.lessThanOrEqual(timestamp + 120)
+  //       .to.greaterThanOrEqual(timestamp)
 
-      await factory.connect(signers[1]).changeMonthlyCost(1)
+  //     await factory.connect(signers[1]).changeMonthlyCost(1)
 
-      expect(await factory.monthlyCost()).to.eq(1)
+  //     expect(await factory.monthlyCost()).to.eq(1)
 
-      await token.approve(factory.address, 1)
+  //     await token.approve(factory.address, 1)
 
-      await factory.subscribe(dao.address)
+  //     await factory.subscribe(dao.address)
 
-      expect(await token.balanceOf(ownerAddress)).to.eq(
-        parseEther('100').sub(1)
-      )
+  //     expect(await token.balanceOf(ownerAddress)).to.eq(
+  //       parseEther('100').sub(1)
+  //     )
 
-      timestamp = dayjs().unix()
+  //     timestamp = dayjs().unix()
 
-      expect((await factory.subscriptions(dao.address)).toNumber())
-        .to.lessThanOrEqual(timestamp + 120 + 30 * 86400)
-        .to.greaterThanOrEqual(timestamp + 30 * 86400)
+  //     expect((await factory.subscriptions(dao.address)).toNumber())
+  //       .to.lessThanOrEqual(timestamp + 120 + 30 * 86400)
+  //       .to.greaterThanOrEqual(timestamp + 30 * 86400)
 
-      await factory.connect(signers[1]).changeMonthlyCost(parseEther('10'))
+  //     await factory.connect(signers[1]).changeMonthlyCost(parseEther('10'))
 
-      expect(await factory.monthlyCost()).to.eq(parseEther('10'))
+  //     expect(await factory.monthlyCost()).to.eq(parseEther('10'))
 
-      await token.approve(factory.address, parseEther('13'))
+  //     await token.approve(factory.address, parseEther('13'))
 
-      await factory.subscribe(dao.address)
+  //     await factory.subscribe(dao.address)
 
-      expect(await token.balanceOf(ownerAddress)).to.eq(parseEther('90').sub(1))
+  //     expect(await token.balanceOf(ownerAddress)).to.eq(parseEther('90').sub(1))
 
-      timestamp = dayjs().unix()
+  //     timestamp = dayjs().unix()
 
-      expect((await factory.subscriptions(dao.address)).toNumber())
-        .to.lessThanOrEqual(timestamp + 120 + 2 * 30 * 86400)
-        .to.greaterThanOrEqual(timestamp + 2 * 30 * 86400)
-    })
-  })
+  //     expect((await factory.subscriptions(dao.address)).toNumber())
+  //       .to.lessThanOrEqual(timestamp + 120 + 2 * 30 * 86400)
+  //       .to.greaterThanOrEqual(timestamp + 2 * 30 * 86400)
+  //   })
+  // })
 })
