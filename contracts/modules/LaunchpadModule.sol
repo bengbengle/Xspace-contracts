@@ -9,7 +9,7 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "../interfaces/IFactory.sol";
 import "../interfaces/IAuction.sol";
 import "../interfaces/IDao.sol";
-import "../interfaces/IPrivateExitModule.sol";
+import "../interfaces/IExitModule.sol";
 
 contract LaunchpadModule is OwnableUpgradeable {
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
@@ -17,7 +17,7 @@ contract LaunchpadModule is OwnableUpgradeable {
 
     IFactory public factory;
     IAuction public auction;
-    IPrivateExitModule public privateExitModule;
+    IExitModule public ExitModule;
 
     struct Sale {
         address currency;
@@ -60,7 +60,7 @@ contract LaunchpadModule is OwnableUpgradeable {
         uint256 indexed saleId,
         address indexed buyer,
         uint256 currencyAmount,
-        uint256 lpAmount
+        uint256 amount
     );
 
     /// @custom:oz-upgrades-unsafe-allow constructor
@@ -75,11 +75,11 @@ contract LaunchpadModule is OwnableUpgradeable {
     function setCoreAddresses(
         IFactory _factory,
         IAuction _auction,
-        IPrivateExitModule _privateExitModule
+        IExitModule _ExitModule
     ) external onlyOwner {
         factory = _factory;
         auction = _auction;
-        privateExitModule = _privateExitModule;
+        ExitModule = _ExitModule;
     }
 
     modifier onlyDao() {
@@ -154,10 +154,10 @@ contract LaunchpadModule is OwnableUpgradeable {
         IERC20Upgradeable govToken = IERC20Upgradeable(IDao(_dao).govToken());
 
         require(
-            govToken.approve(address(privateExitModule), govToken.balanceOf(address(this)))
+            govToken.approve(address(ExitModule), govToken.balanceOf(address(this)))
         );
 
-        require(privateExitModule.privateExit(_dao, _id));
+        require(ExitModule.exit(_dao, _id));
     }
 
     function buy(address _dao, uint256 _currencyAmount) external {
@@ -208,11 +208,11 @@ contract LaunchpadModule is OwnableUpgradeable {
             currencyAmount
         );
 
-        uint256 lpAmount = (currencyAmount * 1 ether) / sale.rate;
+        uint256 amount = (currencyAmount * 1 ether) / sale.rate;
 
-        IERC20Upgradeable(IDao(_dao).govToken()).safeTransfer(msg.sender, lpAmount);
+        IERC20Upgradeable(IDao(_dao).govToken()).safeTransfer(msg.sender, amount);
 
-        emit Buy(_dao, saleIndex, msg.sender, currencyAmount, lpAmount);
+        emit Buy(_dao, saleIndex, msg.sender, currencyAmount, amount);
     }
 
     struct SaleInfo {

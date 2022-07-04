@@ -5,7 +5,6 @@ import {
   DaoViewer__factory,
   Factory__factory,
   Auction__factory,
-  Xspace__factory
 } from '../../typechain-types'
 
 dotenv.config()
@@ -19,15 +18,7 @@ async function main() {
 
   console.log('Auction:', auction.address)
 
-  const xspace = await new Xspace__factory(signers[0]).deploy()
-
-  await xspace.deployed()
-
-  console.log('Xspace:', xspace.address)
-
-  const factory = await new Factory__factory(signers[0]).deploy(
-    xspace.address
-  )
+  const factory = await new Factory__factory(signers[0]).deploy()
 
   await factory.deployed()
 
@@ -58,17 +49,8 @@ async function main() {
 
   try {
     await run('verify:verify', {
-      address: xspace.address,
-      contract: 'contracts/core/Xspace.sol:Xspace'
-    })
-  } catch {
-    console.log('Verification problem (Xspace)')
-  }
-
-  try {
-    await run('verify:verify', {
       address: factory.address,
-      constructorArguments: [auction.address, xspace.address],
+      constructorArguments: [],
       contract: 'contracts/core/Factory.sol:Factory'
     })
   } catch {

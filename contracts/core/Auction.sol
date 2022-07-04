@@ -21,7 +21,7 @@ contract Auction is ReentrancyGuard {
     struct PublicOffer {
         bool isActive;
         address currency;
-        uint256 rate; // lpAmount = currencyAmount / rate. For example: 1 LP = 100 USDT. 530 USDT -> 530/100 = 5.3 LP
+        uint256 rate; // amount = currencyAmount / rate. For example: 1 LP = 100 USDT. 530 USDT -> 530/100 = 5.3 LP
     }
 
     mapping(address => PublicOffer) public publicOffers; // publicOffers[dao]
@@ -31,7 +31,7 @@ contract Auction is ReentrancyGuard {
         address recipient;
         address currency;
         uint256 currencyAmount;
-        uint256 lpAmount;
+        uint256 amount;
     }
 
     mapping(address => mapping(uint256 => PrivateOffer)) public privateOffers; // privateOffers[dao][offerId]
@@ -94,7 +94,7 @@ contract Auction is ReentrancyGuard {
         return true;
     }
 
-    function createPrivateOffer(address _recipient, address _currency, uint256 _currencyAmount, uint256 _lpAmount) 
+    function createPrivateOffer(address _recipient, address _currency, uint256 _currencyAmount, uint256 _amount) 
         external 
         onlyDaoWithGovToken 
         returns (bool)
@@ -104,7 +104,7 @@ contract Auction is ReentrancyGuard {
             recipient: _recipient,
             currency: _currency,
             currencyAmount: _currencyAmount,
-            lpAmount: _lpAmount
+            amount: _amount
         });
 
         numberOfPrivateOffers[msg.sender]++;
@@ -175,7 +175,7 @@ contract Auction is ReentrancyGuard {
 
         address token = IDao(_dao).govToken();
 
-        bool b = IGovToken(token).mint(msg.sender, offer.lpAmount);
+        bool b = IGovToken(token).mint(msg.sender, offer.amount);
 
         require(b, "Auction: mint error");
 

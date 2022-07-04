@@ -16,7 +16,6 @@
 //   Auction__factory,
 //   Token,
 //   Token__factory,
-//   Xspace__factory
 // } from '../../typechain-types'
 // import { executeTx, executeTxRaw } from '../utils'
 
@@ -53,13 +52,6 @@
 //     employee = signers[1]
 
 //     auction = await new Auction__factory(signer).deploy()
-
-//     const Xspace = await new Xspace__factory(signer).deploy()
-
-//     factory = await new Factory__factory(signer).deploy(
-//       auction.address,
-//       Xspace.address
-//     )
 
 //     await auction.setFactory(factory.address)
 

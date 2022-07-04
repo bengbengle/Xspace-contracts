@@ -15,13 +15,12 @@
 //   LaunchpadModule__factory,
 //   LP,
 //   LP__factory,
-//   PrivateExitModule,
-//   PrivateExitModule__factory,
+//   ExitModule,
+//   ExitModule__factory,
 //   // Auction,
 //   // Auction__factory,
 //   Token,
 //   Token__factory,
-//   Xspace__factory
 // } from '../../typechain-types'
 // import { createData, executeTx, executeTxRaw } from '../utils'
 
@@ -34,7 +33,7 @@
 
 //   let signer: SignerWithAddress
 
-//   let privateExitModule: PrivateExitModule
+//   let ExitModule: ExitModule
 
 //   let launchpad: LaunchpadModule
 
@@ -47,19 +46,13 @@
 
 //     // auction = await new Auction__factory(signer).deploy()
 
-//     const Xspace = await new Xspace__factory(signer).deploy()
-
-//     factory = await new Factory__factory(signer).deploy(
-//       Xspace.address
-//     )
-
 //     // await auction.setFactory(factory.address)
 
 //     await factory.create('', '', 51, [signer.address], [parseEther('1')])
 
 //     dao = Dao__factory.connect(await factory.daoAt(0), signer)
 
-//     privateExitModule = await new PrivateExitModule__factory(signer).deploy()
+//     ExitModule = await new ExitModule__factory(signer).deploy()
 
 //     launchpad = (await upgrades.deployProxy(
 //       await ethers.getContractFactory('LaunchpadModule')
@@ -68,7 +61,7 @@
 //     launchpad.setCoreAddresses(
 //       factory.address,
 //       auction.address,
-//       privateExitModule.address
+//       ExitModule.address
 //     )
 
 //     usdc = await new Token__factory(signer).deploy()
@@ -170,9 +163,9 @@
 
 //       await executeTxRaw(
 //         dao.address,
-//         privateExitModule.address,
-//         PrivateExitModule__factory.createInterface().encodeFunctionData(
-//           'createPrivateExitOffer',
+//         ExitModule.address,
+//         ExitModule__factory.createInterface().encodeFunctionData(
+//           'createexitOffer',
 //           [launchpad.address, parseEther('12'), constants.Zero, [], []]
 //         ),
 //         0,

@@ -46,7 +46,7 @@ describe('Dao', () => {
 
     auction = await new Auction__factory(signers[0]).deploy()
 
-    factory = await new Factory__factory(signers[0]).deploy(token.address)
+    factory = await new Factory__factory(signers[0]).deploy()
 
     await auction.setFactory(factory.address)
 

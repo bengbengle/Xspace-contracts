@@ -47,7 +47,7 @@ describe('DaoViewer', () => {
 
     token = await new Token__factory(signers[0]).deploy()
 
-    factory = await new Factory__factory(signers[0]).deploy(token.address)
+    factory = await new Factory__factory(signers[0]).deploy()
 
     auction = await new Auction__factory(signers[0]).deploy()
 
@@ -278,7 +278,7 @@ describe('DaoViewer', () => {
 
     token = await new Token__factory(signers[0]).deploy()
 
-    factory = await new Factory__factory(signers[0]).deploy(token.address)
+    factory = await new Factory__factory(signers[0]).deploy()
 
     daoViewer = await new DaoViewer__factory(signers[0]).deploy()
 
@@ -362,7 +362,7 @@ describe('DaoViewer', () => {
 
     token = await new Token__factory(signers[0]).deploy()
 
-    factory = await new Factory__factory(signers[0]).deploy(token.address)
+    factory = await new Factory__factory(signers[0]).deploy()
 
     daoViewer = await new DaoViewer__factory(signers[0]).deploy()
 

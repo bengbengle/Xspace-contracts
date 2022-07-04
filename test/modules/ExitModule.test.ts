@@ -12,8 +12,8 @@
 //   LP,
 //   LP__factory,
 //   NamedToken__factory,
-//   PrivateExitModule,
-//   PrivateExitModule__factory,
+//   ExitModule,
+//   ExitModule__factory,
 //   Auction,
 //   Auction__factory,
 //   Token,
@@ -21,7 +21,7 @@
 // } from '../../typechain-types'
 // import { executeTx } from '../utils'
 
-// describe('PrivateExitModule', () => {
+// describe('ExitModule', () => {
 //   let auction: Auction
 
 //   let factory: Factory
@@ -32,7 +32,7 @@
 
 //   let lp: LP
 
-//   let privateExitModule: PrivateExitModule
+//   let ExitModule: ExitModule
 
 //   let signers: SignerWithAddress[]
 
@@ -47,10 +47,7 @@
 
 //     auction = await new Auction__factory(signers[0]).deploy()
 
-//     factory = await new Factory__factory(signers[0]).deploy(
-//       auction.address,
-//       token.address
-//     )
+//     factory = await new Factory__factory(signers[0]).deploy()
 
 //     await auction.setFactory(factory.address)
 
@@ -72,7 +69,7 @@
 
 //     dao = Dao__factory.connect(await factory.daoAt(0), signers[0])
 
-//     privateExitModule = await new PrivateExitModule__factory(
+//     ExitModule = await new ExitModule__factory(
 //       signers[0]
 //     ).deploy()
 
@@ -101,8 +98,8 @@
 
 //     await executeTx(
 //       dao.address,
-//       privateExitModule.address,
-//       'createPrivateExitOffer',
+//       ExitModule.address,
+//       'createexitOffer',
 //       ['address', 'uint256', 'uint256', 'address[]', 'uint256[]'],
 //       [
 //         friendAddress,
@@ -116,7 +113,7 @@
 //     )
 
 //     await expect(
-//       privateExitModule.connect(signers[1]).privateExit(dao.address, 0)
+//       ExitModule.connect(signers[1]).exit(dao.address, 0)
 //     ).to.be.revertedWith('ERC20: insufficient allowance')
 
 //     expect(await lp.totalSupply()).to.eql(constants.Zero)
@@ -138,15 +135,15 @@
 //       .to.eql(await lp.totalSupply())
 
 //     await expect(
-//       privateExitModule.connect(signers[1]).privateExit(dao.address, 0)
+//       ExitModule.connect(signers[1]).exit(dao.address, 0)
 //     ).to.be.revertedWith('ERC20: insufficient allowance')
 
 //     await lp
 //       .connect(signers[1])
-//       .approve(privateExitModule.address, parseEther('999'))
+//       .approve(ExitModule.address, parseEther('999'))
 
 //     await expect(
-//       privateExitModule.connect(signers[1]).privateExit(dao.address, 0)
+//       ExitModule.connect(signers[1]).exit(dao.address, 0)
 //     ).to.be.revertedWith('DAO: only for permitted')
 
 //     await executeTx(
@@ -154,22 +151,22 @@
 //       dao.address,
 //       'addPermitted',
 //       ['address'],
-//       [privateExitModule.address],
+//       [ExitModule.address],
 //       0,
 //       signers[0]
 //     )
 
-//     expect(await dao.containsPermitted(privateExitModule.address)).to.eq(true)
+//     expect(await dao.containsPermitted(ExitModule.address)).to.eq(true)
 
 //     await expect(
-//       privateExitModule.connect(signers[1]).privateExit(dao.address, 0)
+//       ExitModule.connect(signers[1]).exit(dao.address, 0)
 //     ).to.be.revertedWith('ERC20: transfer amount exceeds balance')
 
 //     await usdc.transfer(dao.address, parseEther('1'))
 //     await btc.transfer(dao.address, parseEther('2'))
 
 //     await expect(
-//       privateExitModule.connect(signers[1]).privateExit(dao.address, 0)
+//       ExitModule.connect(signers[1]).exit(dao.address, 0)
 //     ).to.be.revertedWith('Address: insufficient balance')
 
 //     await signers[0].sendTransaction({
@@ -188,13 +185,13 @@
 //     )
 
 //     await expect(
-//       await privateExitModule.connect(signers[1]).privateExit(dao.address, 0)
+//       await ExitModule.connect(signers[1]).exit(dao.address, 0)
 //     ).to.changeEtherBalances(
-//       [dao, signers[1], privateExitModule],
+//       [dao, signers[1], ExitModule],
 //       [parseEther('-0.07'), parseEther('0.07'), parseEther('0')]
 //     )
 
-//     expect(await ethers.provider.getBalance(privateExitModule.address)).to.eql(
+//     expect(await ethers.provider.getBalance(ExitModule.address)).to.eql(
 //       constants.Zero
 //     )
 
@@ -209,8 +206,8 @@
 
 //     await executeTx(
 //       dao.address,
-//       privateExitModule.address,
-//       'createPrivateExitOffer',
+//       ExitModule.address,
+//       'createexitOffer',
 //       ['address', 'uint256', 'uint256', 'address[]', 'uint256[]'],
 //       [
 //         friendAddress,
@@ -224,13 +221,13 @@
 //     )
 
 //     expect(
-//       (await privateExitModule.privateExitOffers(dao.address, 1)).isActive
+//       (await ExitModule.exitOffers(dao.address, 1)).isActive
 //     ).to.eq(true)
 
 //     await executeTx(
 //       dao.address,
-//       privateExitModule.address,
-//       'disablePrivateExitOffer',
+//       ExitModule.address,
+//       'disableExitOffer',
 //       ['uint256'],
 //       [1],
 //       0,
@@ -238,9 +235,9 @@
 //     )
 
 //     expect(
-//       (await privateExitModule.privateExitOffers(dao.address, 1)).isActive
+//       (await ExitModule.exitOffers(dao.address, 1)).isActive
 //     ).to.eq(false)
 
-//     expect((await privateExitModule.getOffers(dao.address)).length).to.eq(2)
+//     expect((await ExitModule.getOffers(dao.address)).length).to.eq(2)
 //   })
 // })

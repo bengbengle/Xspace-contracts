@@ -8,50 +8,50 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "../interfaces/IGovToken.sol";
 import "../interfaces/IDao.sol";
 
-contract PrivateExitModule is ReentrancyGuard {
+contract ExitModule is ReentrancyGuard {
     using SafeERC20 for IERC20;
     using Address for address payable;
 
-    struct PrivateExitOffer {
+    struct exitOffer {
         bool isActive;
         address recipient;
-        uint256 lpAmount;
+        uint256 amount;
         uint256 ethAmount;
         address[] tokenAddresses;
         uint256[] tokenAmounts;
     }
 
-    mapping(address => mapping(uint256 => PrivateExitOffer))
-        public privateExitOffers; // privateExitOffers[dao][offerId]
+    mapping(address => mapping(uint256 => exitOffer))
+        public exitOffers; // exitOffers[dao][offerId]
 
     mapping(address => uint256) public numberOfPrivateOffers;
 
-    event PrivateExit(
+    event Exit(
         address indexed recipient,
-        uint256 indexed lpAmount,
+        uint256 indexed amount,
         uint256 ethAmount,
         address[] tokenAddresses,
         uint256[] tokenAmounts
     );
 
-    function createPrivateExitOffer(
+    function createexitOffer(
         address _recipient,
-        uint256 _lpAmount,
+        uint256 _amount,
         uint256 _ethAmount,
         address[] memory _tokenAddresses,
         uint256[] memory _tokenAmounts
     ) external returns (bool success) {
         require(
             _tokenAddresses.length == _tokenAmounts.length,
-            "PrivateExitModule: Invalid Tokens"
+            "ExitModule: Invalid Tokens"
         );
 
-        privateExitOffers[msg.sender][
+        exitOffers[msg.sender][
             numberOfPrivateOffers[msg.sender]
-        ] = PrivateExitOffer({
+        ] = exitOffer({
             isActive: true,
             recipient: _recipient,
-            lpAmount: _lpAmount,
+            amount: _amount,
             ethAmount: _ethAmount,
             tokenAddresses: _tokenAddresses,
             tokenAmounts: _tokenAmounts
@@ -62,34 +62,34 @@ contract PrivateExitModule is ReentrancyGuard {
         return true;
     }
 
-    function disablePrivateExitOffer(uint256 _offerId)
+    function disableExitOffer(uint256 _offerId)
         external
         returns (bool success)
     {
         require(
-            privateExitOffers[msg.sender][_offerId].isActive == true,
-            "PrivateExitModule: Already Disabled"
+            exitOffers[msg.sender][_offerId].isActive == true,
+            "ExitModule: Already Disabled"
         );
 
-        privateExitOffers[msg.sender][_offerId].isActive = false;
+        exitOffers[msg.sender][_offerId].isActive = false;
 
         return true;
     }
 
-    function privateExit(address _daoAddress, uint256 _offerId)
+    function exit(address _daoAddress, uint256 _offerId)
         external
         nonReentrant
         returns (bool success)
     {
-        PrivateExitOffer storage offer = privateExitOffers[_daoAddress][_offerId];
+        exitOffer storage offer = exitOffers[_daoAddress][_offerId];
 
-        require(offer.isActive, "PrivateExitModule: Offer is Disabled");
+        require(offer.isActive, "ExitModule: Offer is Disabled");
 
         offer.isActive = false;
 
         require(
             offer.recipient == msg.sender,
-            "PrivateExitModule: Invalid Recipient"
+            "ExitModule: Invalid Recipient"
         );
 
         IDao dao = IDao(_daoAddress);
@@ -100,7 +100,7 @@ contract PrivateExitModule is ReentrancyGuard {
 
         require(
             burnableStatus || !IGovToken(govToken).burnableStatusFrozen(),
-            "PrivateExitModule: LP is not Burnable"
+            "ExitModule: LP is not Burnable"
         );
 
         if (!burnableStatus) {
@@ -114,15 +114,15 @@ contract PrivateExitModule is ReentrancyGuard {
         IERC20(govToken).safeTransferFrom(
             msg.sender,
             address(this),
-            offer.lpAmount
+            offer.amount
         );
 
-        IERC20(govToken).approve(govToken, offer.lpAmount);
+        IERC20(govToken).approve(govToken, offer.amount);
 
         address[] memory emptyAddressArray = new address[](0);
 
         IGovToken(govToken).burn(
-            offer.lpAmount,
+            offer.amount,
             emptyAddressArray,
             emptyAddressArray,
             emptyAddressArray
@@ -154,9 +154,9 @@ contract PrivateExitModule is ReentrancyGuard {
             );
         }
 
-        emit PrivateExit(
+        emit Exit(
             offer.recipient,
-            offer.lpAmount,
+            offer.amount,
             offer.ethAmount,
             offer.tokenAddresses,
             offer.tokenAmounts
@@ -168,14 +168,14 @@ contract PrivateExitModule is ReentrancyGuard {
     function getOffers(address _dao)
         external
         view
-        returns (PrivateExitOffer[] memory)
+        returns (exitOffer[] memory)
     {
-        PrivateExitOffer[] memory offers = new PrivateExitOffer[](
+        exitOffer[] memory offers = new exitOffer[](
             numberOfPrivateOffers[_dao]
         );
 
         for (uint256 i = 0; i < numberOfPrivateOffers[_dao]; i++) {
-            offers[i] = privateExitOffers[_dao][i];
+            offers[i] = exitOffers[_dao][i];
         }
 
         return offers;

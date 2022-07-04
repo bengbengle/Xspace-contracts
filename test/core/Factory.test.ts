@@ -9,14 +9,14 @@ import {
   Dao__factory,
   Factory,
   Factory__factory,
-  // Auction,
-  // Auction__factory,
+  Auction,
+  Auction__factory,
   Token,
   Token__factory
 } from '../../typechain-types'
 
 describe('Factory', () => {
-  // let auction: Auction
+  let auction: Auction
 
   let factory: Factory
 
@@ -33,13 +33,12 @@ describe('Factory', () => {
 
     token = await new Token__factory(signers[0]).deploy()
 
-    // auction = await new Auction__factory(signers[0]).deploy()
+    auction = await new Auction__factory(signers[0]).deploy()
 
-    factory = await new Factory__factory(signers[0]).deploy(
-      token.address
-    )
+    factory = await new Factory__factory(signers[0]).deploy()
 
-    // await auction.setFactory(factory.address)
+    await factory.setupAuction(auction.address)
+    await auction.setFactory(factory.address)
   })
 
   it('Create DAO', async () => {

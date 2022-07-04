@@ -15,7 +15,7 @@ interface IAuction {
         address recipient;
         address currency;
         uint256 currencyAmount;
-        uint256 lpAmount;
+        uint256 amount;
     }
 
     function privateOffers(address _dao, uint256 _index)

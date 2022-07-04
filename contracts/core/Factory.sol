@@ -12,50 +12,14 @@ contract Factory is Ownable {
     using EnumerableSet for EnumerableSet.AddressSet;
     using SafeERC20 for IERC20;
 
-    address public immutable Xspace;
     address public auction;
-
-    // mapping(address => uint256) public subscriptions;
-
-    // uint256 public monthlyCost;
-
-    // uint256 public freeTrial;
-
-    // function subscribe(address _dao) external returns (bool) {
-    //     require(daos.contains(_dao));
-
-    //     if (subscriptions[_dao] < block.timestamp) {
-    //         subscriptions[_dao] = block.timestamp + 30 days;
-    //     } else {
-    //         subscriptions[_dao] += 30 days;
-    //     }
-
-    //     IERC20(Xspace).safeTransferFrom(msg.sender, owner(), monthlyCost);
-
-    //     return true;
-    // }
-
-    // function changeMonthlyCost(uint256 _m) external onlyOwner returns (bool) {
-    //     monthlyCost = _m;
-
-    //     return true;
-    // }
-
-    // function changeFreeTrial(uint256 _freeTrial)
-    //     external
-    //     onlyOwner
-    //     returns (bool)
-    // {
-    //     freeTrial = _freeTrial;
-
-    //     return true;
-    // }
 
     event DaoCreated(address indexed dao);
 
-    constructor(address _Xspace) {
-        Xspace = _Xspace;
+    constructor() {
+
     }
+
 
     EnumerableSet.AddressSet private daos;
 
@@ -67,8 +31,6 @@ contract Factory is Ownable {
         uint256[] memory _shares
     ) external returns (bool) {
         Dao dao = new Dao(_daoName, _daoSymbol, _quorum, _partners, _shares);
-
-        // subscriptions[address(dao)] = block.timestamp + freeTrial;
 
         require(daos.add(address(dao)));
 

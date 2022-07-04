@@ -39,7 +39,7 @@ describe('Auction', () => {
 
   let ownerAddress: string
 
-  let gov_token: GovToken
+  let govToken: GovToken
 
   beforeEach(async () => {
     signers = await ethers.getSigners()
@@ -50,10 +50,8 @@ describe('Auction', () => {
 
     auction = await new Auction__factory(signers[0]).deploy()
 
-    factory = await new Factory__factory(signers[0]).deploy(
-      token.address
-    )
-    
+    factory = await new Factory__factory(signers[0]).deploy()
+
     await factory.setupAuction(auction.address)
     await auction.setFactory(factory.address)
 
@@ -114,9 +112,9 @@ describe('Auction', () => {
 
     expect(await dao.govToken()).to.not.eq(constants.AddressZero)
 
-    gov_token = GovToken__factory.connect(await dao.govToken(), signers[0])
+    govToken = GovToken__factory.connect(await dao.govToken(), signers[0])
 
-    expect(await auction.govTokens(gov_token.address)).to.eq(true)
+    expect(await auction.govTokens(govToken.address)).to.eq(true)
   })
 
   it('Public Offer', async () => {
@@ -173,9 +171,9 @@ describe('Auction', () => {
     //   dao.address,
     //   await dao.name(),
     //   await dao.symbol(),
-    //   gov_token.address,
-    //   await gov_token.name(),
-    //   await gov_token.symbol()
+    //   govToken.address,
+    //   await govToken.name(),
+    //   await govToken.symbol()
     // ])
 
     // expect(investInfo[1][0].slice(0, 3)).to.eql([
@@ -203,7 +201,7 @@ describe('Auction', () => {
 
     expect(await goldToken.balanceOf(signers[1].address)).to.eq(0)
 
-    expect(await gov_token.balanceOf(signers[1].address)).to.eq(parseEther('2'))
+    expect(await govToken.balanceOf(signers[1].address)).to.eq(parseEther('2'))
   })
 
   it('Create and Disable Private Offer', async () => {
@@ -261,9 +259,9 @@ describe('Auction', () => {
       dao.address,
       await dao.name(),
       await dao.symbol(),
-      gov_token.address,
-      await gov_token.name(),
-      await gov_token.symbol()
+      govToken.address,
+      await govToken.name(),
+      await govToken.symbol()
     ])
 
     expect(privateOffersInfo.slice(1)).to.eql([
