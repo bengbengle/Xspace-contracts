@@ -30,9 +30,4 @@ yarn coverage
 
 ## Licensing
 
-The primary license for Xspace is the Business Source License 1.1 (`BUSL-1.1`), see [`LICENSE`](./LICENSE).
-
-### Exceptions
-
-- All files in `contracts/core/` are licensed under `GPL-2.0-or-later` (as indicated in their SPDX headers)
-- All files in `contracts/interfaces/`, `contracts/mocks/` and `contracts/viewers/` are licensed under `MIT` (as indicated in their SPDX headers)
+The primary license for Xspace is MIT
