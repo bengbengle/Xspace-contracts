@@ -42,13 +42,10 @@ contract ExitModule is ReentrancyGuard {
         uint256[] memory _tokenAmounts
     ) external returns (bool success) {
         require(
-            _tokenAddresses.length == _tokenAmounts.length,
-            "ExitModule: Invalid Tokens"
+            _tokenAddresses.length == _tokenAmounts.length, "ExitModule: Invalid Tokens"
         );
 
-        exitOffers[msg.sender][
-            numberOfPrivateOffers[msg.sender]
-        ] = exitOffer({
+        exitOffers[msg.sender][numberOfPrivateOffers[msg.sender]] = exitOffer({
             isActive: true,
             recipient: _recipient,
             amount: _amount,
@@ -123,9 +120,9 @@ contract ExitModule is ReentrancyGuard {
 
         IGovToken(govToken).burn(
             offer.amount,
-            emptyAddressArray,
-            emptyAddressArray,
             emptyAddressArray
+            // emptyAddressArray,
+            // emptyAddressArray
         );
 
         for (uint256 i = 0; i < offer.tokenAddresses.length; i++) {

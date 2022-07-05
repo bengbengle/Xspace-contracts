@@ -248,7 +248,6 @@ describe('Auction', () => {
 
     const daoViewer = await new DaoViewer__factory(signers[0]).deploy()
     
-    console.log('daoViewer.address:', daoViewer.address);
     const privateOffersInfo = await daoViewer.getPrivateOffersInfo(
       factory.address
     )

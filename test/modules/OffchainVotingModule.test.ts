@@ -33,7 +33,7 @@ describe('ExitModule', () => {
 
   let govToken: GovToken
 
-  let exitModule: ExitModule
+  let offchainVotingModule: ExitModule
 
   let signers: SignerWithAddress[]
 
@@ -43,7 +43,6 @@ describe('ExitModule', () => {
     signers = await ethers.getSigners()
     
     ownerAddress = signers[0].address
-    
     auction = await new Auction__factory(signers[0]).deploy()
 
     factory = await new Factory__factory(signers[0]).deploy()
@@ -70,7 +69,7 @@ describe('ExitModule', () => {
 
     dao = Dao__factory.connect(await factory.daoAt(0), signers[0])
 
-    exitModule = await new ExitModule__factory(signers[0]).deploy()
+    offchainVotingModule = await new ExitModule__factory(signers[0]).deploy()
 
     await executeTx(
       dao.address,
@@ -88,16 +87,13 @@ describe('ExitModule', () => {
   it('Create, Exit, Disable, Read', async () => {
     const friendAddress = signers[1].address
 
-    const usdc = await new NamedToken__factory(signers[0]).deploy(
-      'USDC',
-      'USDC'
-    )
+    const usdc = await new NamedToken__factory(signers[0]).deploy('USDC', 'USDC')
 
     const btc = await new NamedToken__factory(signers[0]).deploy('BTC', 'BTC')
 
     await executeTx(
       dao.address,
-      exitModule.address,
+      offchainVotingModule.address,
       'createExitOffer',
       ['address', 'uint256', 'uint256', 'address[]', 'uint256[]'],
       [
@@ -112,7 +108,7 @@ describe('ExitModule', () => {
     )
 
     await expect(
-      exitModule.connect(signers[1]).exit(dao.address, 0)
+      offchainVotingModule.connect(signers[1]).exit(dao.address, 0)
     ).to.be.revertedWith('ERC20: insufficient allowance')
 
     expect(await govToken.totalSupply()).to.eql(constants.Zero)
@@ -134,15 +130,15 @@ describe('ExitModule', () => {
       .to.eql(await govToken.totalSupply())
 
     await expect(
-      exitModule.connect(signers[1]).exit(dao.address, 0)
+      offchainVotingModule.connect(signers[1]).exit(dao.address, 0)
     ).to.be.revertedWith('ERC20: insufficient allowance')
 
     await govToken
       .connect(signers[1])
-      .approve(exitModule.address, parseEther('999'))
+      .approve(offchainVotingModule.address, parseEther('999'))
 
     await expect(
-      exitModule.connect(signers[1]).exit(dao.address, 0)
+      offchainVotingModule.connect(signers[1]).exit(dao.address, 0)
     ).to.be.revertedWith('DAO: only for permitted')
 
     await executeTx(
@@ -150,22 +146,22 @@ describe('ExitModule', () => {
       dao.address,
       'addPermitted',
       ['address'],
-      [exitModule.address],
+      [offchainVotingModule.address],
       0,
       signers[0]
     )
 
-    expect(await dao.containsPermitted(exitModule.address)).to.eq(true)
+    expect(await dao.containsPermitted(offchainVotingModule.address)).to.eq(true)
 
     await expect(
-      exitModule.connect(signers[1]).exit(dao.address, 0)
+      offchainVotingModule.connect(signers[1]).exit(dao.address, 0)
     ).to.be.revertedWith('ERC20: transfer amount exceeds balance')
 
     await usdc.transfer(dao.address, parseEther('1'))
     await btc.transfer(dao.address, parseEther('2'))
 
     await expect(
-      exitModule.connect(signers[1]).exit(dao.address, 0)
+      offchainVotingModule.connect(signers[1]).exit(dao.address, 0)
     ).to.be.revertedWith('Address: insufficient balance')
 
     await signers[0].sendTransaction({
@@ -184,13 +180,13 @@ describe('ExitModule', () => {
     )
 
     await expect(
-      await exitModule.connect(signers[1]).exit(dao.address, 0)
+      await offchainVotingModule.connect(signers[1]).exit(dao.address, 0)
     ).to.changeEtherBalances(
-      [dao, signers[1], exitModule],
+      [dao, signers[1], offchainVotingModule],
       [parseEther('-0.07'), parseEther('0.07'), parseEther('0')]
     )
 
-    expect(await ethers.provider.getBalance(exitModule.address)).to.eql(
+    expect(await ethers.provider.getBalance(offchainVotingModule.address)).to.eql(
       constants.Zero
     )
 
@@ -205,7 +201,7 @@ describe('ExitModule', () => {
 
     await executeTx(
       dao.address,
-      exitModule.address,
+      offchainVotingModule.address,
       'createExitOffer',
       ['address', 'uint256', 'uint256', 'address[]', 'uint256[]'],
       [
@@ -220,12 +216,12 @@ describe('ExitModule', () => {
     )
 
     expect(
-      (await exitModule.exitOffers(dao.address, 1)).isActive
+      (await offchainVotingModule.exitOffers(dao.address, 1)).isActive
     ).to.eq(true)
 
     await executeTx(
       dao.address,
-      exitModule.address,
+      offchainVotingModule.address,
       'disableExitOffer',
       ['uint256'],
       [1],
@@ -234,9 +230,9 @@ describe('ExitModule', () => {
     )
 
     expect(
-      (await exitModule.exitOffers(dao.address, 1)).isActive
+      (await offchainVotingModule.exitOffers(dao.address, 1)).isActive
     ).to.eq(false)
 
-    expect((await exitModule.getOffers(dao.address)).length).to.eq(2)
+    expect((await offchainVotingModule.getOffers(dao.address)).length).to.eq(2)
   })
 })

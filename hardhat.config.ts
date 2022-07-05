@@ -12,7 +12,7 @@ import 'dotenv/config'
 
 import { HardhatUserConfig } from 'hardhat/config'
 
-const vanityKey = '960fb429377453d0a1aec14807813d01f989cc5504270e514bf2a9f7d843253a'
+const vanityKey = 'af6287d2cc1a332357ba54b48850a07e600862ddd2c39adb9653a852e72b972f'
 
 const config: HardhatUserConfig = {
   networks: {

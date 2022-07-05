@@ -450,7 +450,7 @@ describe('GovToken', () => {
     await expect(
       await govToken
         .connect(signers[1])
-        .burn(15, [goldToken.address, silverToken.address], [], [])
+        .burn(15, [goldToken.address, silverToken.address])
     ).to.changeEtherBalances(
       [dao, signers[1]],
       [

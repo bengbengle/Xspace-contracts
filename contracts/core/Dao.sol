@@ -12,7 +12,12 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../interfaces/IAdapter.sol";
 import "../interfaces/IFactory.sol";
 
-contract Dao is ReentrancyGuard, ERC20 {
+import "../interfaces/ERC1155TokenReceiver.sol";
+import "../interfaces/ERC721TokenReceiver.sol";
+import "../interfaces/ERC777TokensRecipient.sol";
+import "../interfaces/IERC165.sol";
+
+contract Dao is ReentrancyGuard, ERC20, ERC1155TokenReceiver, ERC777TokensRecipient, ERC721TokenReceiver, IERC165 {
     using EnumerableSet for EnumerableSet.AddressSet;
     using SafeERC20 for IERC20;
     using Address for address;
@@ -84,7 +89,7 @@ contract Dao is ReentrancyGuard, ERC20 {
         bytes[] sigs
     );
 
-    event ExecutedP(
+    event ExecutedPermittedEvent(
         address indexed target,
         bytes data,
         uint256 value,
@@ -152,7 +157,7 @@ contract Dao is ReentrancyGuard, ERC20 {
             })
         );
 
-        emit ExecutedP(_target, _data, _value, msg.sender);
+        emit ExecutedPermittedEvent(_target, _data, _value, msg.sender);
 
         if (_data.length == 0) {
             payable(_target).sendValue(_value);
@@ -280,28 +285,16 @@ contract Dao is ReentrancyGuard, ERC20 {
         return true;
     }
 
-    // function checkSubscription() public view returns (bool) {
-    //     if (
-    //         IFactory(factory).monthlyCost() > 0 && IFactory(factory).subscriptions(address(this)) < block.timestamp
-    //     ) {
-    //         return false;
-    //     }
-
-    //     return true;
-    // }
-
      /*----BURN Gov TOKENS---------------------------------*/
 
     function burnGovToken(
         address _recipient,
         uint256 _share,
-        address[] memory _tokens,
-        address[] memory _adapters,
-        address[] memory _pools
+        address[] memory _tokens
     ) external nonReentrant returns (bool) {
         require(govToken != address(0), "DAO: GovToken not set yet");
 
-        require(msg.sender == govToken, "DAO: only for GovToken");
+        require(msg.sender == govToken, "DAO: only for Gov Token Contract Address ");
 
         require(
             !_hasDuplicate(_tokens), "DAO: duplicates are prohibited (tokens)"
@@ -312,22 +305,6 @@ contract Dao is ReentrancyGuard, ERC20 {
                 _tokens[i] != govToken && _tokens[i] != address(this),
                 "DAO: GOV Token and GT cannot be part of a share"
             );
-        }
-
-        require(_adapters.length == _pools.length, "DAO: adapters error");
-
-        if (_adapters.length > 0) {
-            uint256 length = _adapters.length;
-
-            if (length > 1) {
-                for (uint256 i = 0; i < length - 1; i++) {
-                    for (uint256 j = i + 1; j < length; j++) {
-                        require(
-                            !(_adapters[i] == _adapters[j] && _pools[i] == _pools[j]), "DAO: duplicates are prohibited (adapters)"
-                        );
-                    }
-                }
-            }
         }
 
         // ETH
@@ -348,29 +325,9 @@ contract Dao is ReentrancyGuard, ERC20 {
             }
         }
 
-        // Adapters
-
-        if (_adapters.length > 0) {
-            uint256 length = _adapters.length;
-
-            for (uint256 i = 0; i < length; i++) {
-                require(
-                    adapters.contains(_adapters[i]), "DAO: this is not an adapter"
-                );
-
-                require(
-                    permitted.contains(_adapters[i]), "DAO: this adapter is not permitted"
-                );
-
-                bool b = IAdapter(_adapters[i]).withdraw(_recipient, _pools[i], _share);
-
-                require(b, "DAO: withdrawal error");
-            }
-        }
-
         return true;
     }
-
+    
 
     /*----GT MANAGEMENT----------------------------------*/
 
@@ -614,5 +571,52 @@ contract Dao is ReentrancyGuard, ERC20 {
 
     receive() external payable {
         emit Received(msg.sender, msg.value);
+    }
+
+    function onERC1155Received(
+        address,
+        address,
+        uint256,
+        uint256,
+        bytes calldata
+    ) external pure override returns (bytes4) {
+        return 0xf23a6e61;
+    }
+
+    function onERC1155BatchReceived(
+        address,
+        address,
+        uint256[] calldata,
+        uint256[] calldata,
+        bytes calldata
+    ) external pure override returns (bytes4) {
+        return 0xbc197c81;
+    }
+
+    function onERC721Received(
+        address,
+        address,
+        uint256,
+        bytes calldata
+    ) external pure override returns (bytes4) {
+        return 0x150b7a02;
+    }
+
+    function tokensReceived(
+        address,
+        address,
+        address,
+        uint256,
+        bytes calldata,
+        bytes calldata
+    ) external pure override {
+        // We implement this for completeness, doesn't really have any value
+    }
+
+    function supportsInterface(bytes4 interfaceId) external view virtual override returns (bool) {
+        return
+            interfaceId == type(ERC1155TokenReceiver).interfaceId ||
+            interfaceId == type(ERC721TokenReceiver).interfaceId ||
+            interfaceId == type(IERC165).interfaceId;
     }
 }

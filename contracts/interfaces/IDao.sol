@@ -10,7 +10,7 @@ interface IDao {
 
     function setGovToken(address _govToken) external returns (bool);
 
-    function burnGovToken(address _recipient, uint256 _share, address[] memory _tokens, address[] memory _adapters, address[] memory _pools) external returns (bool);
+    function burnGovToken(address _recipient, uint256 _share, address[] memory _tokens) external returns (bool);
 
     function quorum() external view returns (uint8);
 
@@ -24,9 +24,5 @@ interface IDao {
 
     function numberOfAdapters() external view returns (uint256);
 
-    function executePermitted(
-        address _target,
-        bytes calldata _data,
-        uint256 _value
-    ) external returns (bool);
+    function executePermitted(address _target, bytes calldata _data, uint256 _value) external returns (bool);
 }

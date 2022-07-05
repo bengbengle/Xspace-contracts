@@ -1,18 +1,19 @@
-// SPDX-License-Identifier: GPL-2.0-or-later
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.6;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Permit.sol";
-
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
 
 import "../interfaces/IDao.sol";
 
+contract MyToken is ERC721, ERC721Enumerable, Ownable {
+    using Counters for Counters.Counter;
 
-contract GovToken is ReentrancyGuard, ERC20, ERC20Permit {
+    Counters.Counter private _tokenIdCounter;
+
     address public immutable dao;
-
-    address public immutable owner;
     address public auction;
 
     bool public mintable = true;
@@ -24,41 +25,53 @@ contract GovToken is ReentrancyGuard, ERC20, ERC20Permit {
         string memory _name,
         string memory _symbol,
         address _dao
-    ) ERC20(_name, _symbol) ERC20Permit(_name) {
+    ) ERC721(_name, _symbol) {
         dao = _dao;
-        owner = msg.sender;
         auction = msg.sender;
     }
-
     modifier onlyDao() {
         require(msg.sender == dao, "GovToken: caller is not the dao");
         _;
     }
+    // The following functions are overrides required by Solidity.
 
-    modifier onlyOwner() {
-        require(msg.sender == owner, "GovToken: caller is not the owner");
-        _;
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId)
+        internal
+        override(ERC721, ERC721Enumerable)
+    {
+        super._beforeTokenTransfer(from, to, tokenId);
     }
 
-    function mint(address _to, uint256 _amount) external onlyOwner returns (bool)
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        override(ERC721, ERC721Enumerable)
+        returns (bool)
+    {
+        return super.supportsInterface(interfaceId);
+    }
+
+     function mint(address _to) external onlyOwner returns (bool)
     {
         require(mintable, "GovToken: minting is disabled");
-        _mint(_to, _amount);
+        
+        uint256 tokenId = _tokenIdCounter.current();
+        _tokenIdCounter.increment();
+        _safeMint(_to, tokenId);
         return true;
     }
-
-    function burn(uint256 _amount, address[] memory _tokens) external nonReentrant returns (bool) 
+     function burn(uint256 _tokenId, address[] memory _tokens) 
+        external  
+        returns (bool) 
     {
         require(burnable, "GovToken: burning is disabled");
         require(msg.sender != dao, "GovToken: DAO can't burn GovToken");
-        require(
-            _amount <= balanceOf(msg.sender), "GovToken: insufficient balance"
-        );
+        require(balanceOf(msg.sender) >=1, "GovToken: insufficient balance");
         require(totalSupply() > 0, "GovToken: Zero share");
 
-        uint256 _share = (1e18 * _amount) / (totalSupply());
+        uint256 _share = 1 / (totalSupply());
 
-        _burn(msg.sender, _amount);
+        _burn(_tokenId);
 
         bool b = IDao(dao).burnGovToken(msg.sender, _share, _tokens);
 
@@ -67,6 +80,7 @@ contract GovToken is ReentrancyGuard, ERC20, ERC20Permit {
         return true;
     }
 
+    
     function changeMintable(bool _mintable) external onlyDao returns (bool) {
         require(!mintableStatusFrozen, "GovToken: minting status is frozen");
         mintable = _mintable;

@@ -522,7 +522,7 @@ describe('Dao', () => {
 
     await auction.buyPrivateOffer(dao.address, 0)
 
-    await govToken.burn(0, [], [adapter.address], [constants.AddressZero])
+    // await govToken.burn(0, [])
 
     VOTING = {
       target: dao.address,
@@ -562,9 +562,7 @@ describe('Dao', () => {
     expect(await dao.containsPermitted(adapter.address)).to.eq(false)
     expect(await dao.getPermitted()).to.be.an('array').that.is.empty
 
-    await expect(
-      govToken.burn(0, [], [adapter.address], [constants.AddressZero])
-    ).to.be.revertedWith('DAO: this is not an adapter')
+    // await expect(govToken.burn(0, [])).to.be.revertedWith('DAO: this is not an adapter')
   })
 
   it('Permitted: Add, Execute Permitted and Remove', async () => {
@@ -625,7 +623,7 @@ describe('Dao', () => {
         .connect(signers[1])
         .executePermitted(signers[2].address, '0x', parseEther('0.03'))
     )
-      .to.emit(dao, 'ExecutedP')
+      .to.emit(dao, 'ExecutedPermittedEvent')
       .withArgs(signers[2].address, '0x', parseEther('0.03'), friendAddress)
       .to.changeEtherBalances(
         [dao, signers[2]],
@@ -647,7 +645,7 @@ describe('Dao', () => {
           parseEther('0.01')
         )
     )
-      .to.emit(dao, 'ExecutedP')
+      .to.emit(dao, 'ExecutedPermittedEvent')
       .withArgs(
         paybleFunctionContract.address,
         createData('hello', ['uint256'], [123]),
@@ -668,7 +666,7 @@ describe('Dao', () => {
           0
         )
     )
-      .to.emit(dao, 'ExecutedP')
+      .to.emit(dao, 'ExecutedPermittedEvent')
       .withArgs(
         dao.address,
         createData('addPermitted', ['address'], [signers[3].address]),
@@ -687,7 +685,7 @@ describe('Dao', () => {
           0
         )
     )
-      .to.emit(dao, 'ExecutedP')
+      .to.emit(dao, 'ExecutedPermittedEvent')
       .withArgs(
         dao.address,
         createData('removePermitted', ['address'], [signers[3].address]),
@@ -750,45 +748,6 @@ describe('Dao', () => {
       [parseEther('-0.02'), parseEther('0.02')]
     )
   })
-
-  // it('DAO did not Pay for the Subscription', async () => {
-  //   await factory.changeMonthlyCost(1)
-
-  //   const timestamp = dayjs().unix()
-
-  //   const VOTING = {
-  //     target: dao.address,
-  //     data: createData('addPermitted', ['address'], [ownerAddress]),
-  //     value: 0,
-  //     nonce: 0,
-  //     timestamp
-  //   }
-
-  //   const txHash = createTxHash(
-  //     dao.address,
-  //     VOTING.target,
-  //     VOTING.data,
-  //     VOTING.value,
-  //     VOTING.nonce,
-  //     VOTING.timestamp,
-  //     1337
-  //   )
-
-  //   const sig = await signers[0].signMessage(txHash)
-
-  //   expect(verifyMessage(txHash, sig)).to.eq(ownerAddress)
-
-  //   await expect(
-  //     dao.execute(
-  //       VOTING.target,
-  //       VOTING.data,
-  //       VOTING.value,
-  //       VOTING.nonce,
-  //       VOTING.timestamp,
-  //       [sig]
-  //     )
-  //   ).to.be.revertedWith('DAO: subscription not paid')
-  // })
 
   it('Revert Adapter Duplicates and Length Mismatch', async () => {
     const adapter = await new Adapter__factory(signers[0]).deploy()
@@ -902,23 +861,9 @@ describe('Dao', () => {
 
     await auction.buyPrivateOffer(dao.address, 0)
 
-    await expect(
-      govToken.burn(
-        0,
-        [],
-        [adapter.address, adapter.address],
-        [constants.AddressZero, constants.AddressZero]
-      )
-    ).to.be.revertedWith('DAO: duplicates are prohibited (adapters)')
+    // await expect(govToken.burn(0, [])).to.be.revertedWith('DAO: duplicates are prohibited (adapters)')
 
-    await expect(
-      govToken.burn(
-        0,
-        [],
-        [adapter.address],
-        [constants.AddressZero, constants.AddressZero]
-      )
-    ).to.be.revertedWith('DAO: adapters error')
+    // await expect(govToken.burn(0, [])).to.be.revertedWith('DAO: adapters error')
   })
 
   it('Move and Burn GT', async () => {
