@@ -10,7 +10,8 @@
     "coverage": "hardhat coverage",
     "lint": "eslint . --fix",
     "deploy:rinkeby": "npx hardhat run --network rinkeby scripts/core/testnetDeploy.ts",
-    "deploy:all": "yarn clean && yarn compile && yarn deploy:rinkeby"
+    "deploy:all": "yarn clean && yarn compile && yarn deploy:rinkeby",
+    "verify": "npx hardhat run --network rinkeby scripts/core/verify.ts"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.5",

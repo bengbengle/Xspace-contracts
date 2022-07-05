@@ -103,7 +103,7 @@ async function main() {
     await run('verify:verify', {
       address: dao.address,
       constructorArguments: ["TestDao", 'TDAO', 51, [signers[0].address], [1]],
-      contract: 'contracts/caore/Dao.sol:Dao'
+      contract: 'contracts/core/Dao.sol:Dao'
     })
   } catch(ex) {
     console.log('Verification problem (Dao)', ex)
