@@ -9,7 +9,8 @@
     "test": "hardhat test",
     "coverage": "hardhat coverage",
     "lint": "eslint . --fix",
-    "deploy:rinkeby": "npx hardhat run --network rinkeby scripts/core/testnetDeploy.ts"
+    "deploy:rinkeby": "npx hardhat run --network rinkeby scripts/core/testnetDeploy.ts",
+    "deploy:all": "yarn clean && yarn compile && yarn deploy:rinkeby"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.5",
@@ -19,7 +20,6 @@
     "@openzeppelin/contracts": "^4.5.0",
     "@openzeppelin/contracts-upgradeable": "^4.5.2",
     "@openzeppelin/hardhat-upgrades": "^1.15.0",
-    "@soliditylabs/erc721-permit": "^1.0.0",
     "@typechain/ethers-v5": "^9.0.0",
     "@typechain/hardhat": "^4.0.0",
     "@types/chai": "^4.3.0",

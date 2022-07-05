@@ -16,11 +16,7 @@ contract Factory is Ownable {
 
     event DaoCreated(address indexed dao);
 
-    constructor() {
-
-    }
-
-
+   
     EnumerableSet.AddressSet private daos;
 
     function create(
@@ -30,6 +26,26 @@ contract Factory is Ownable {
         address[] memory _partners,
         uint256[] memory _shares
     ) external returns (bool) {
+        Dao dao = new Dao(_daoName, _daoSymbol, _quorum, _partners, _shares);
+
+        require(daos.add(address(dao)));
+
+        emit DaoCreated(address(dao));
+
+        return true;
+    }
+
+    function createMultiSigWallet(
+        string memory _daoName,
+        string memory _daoSymbol,
+        uint8 _quorum,
+        address[] memory _partners
+    ) external returns (bool) {
+        uint256[] memory _shares = new uint256[](_partners.length);
+
+        for (uint256 i = 0; i < _partners.length; i++) {
+            _shares[i] = 1;
+        }
         Dao dao = new Dao(_daoName, _daoSymbol, _quorum, _partners, _shares);
 
         require(daos.add(address(dao)));

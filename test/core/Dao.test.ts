@@ -140,7 +140,7 @@ describe('Dao', () => {
     expect(verifyMessage(txHash, sigs[0])).to.eq(ownerAddress)
   })
 
-  it('Mint GT and Sign Together', async () => {
+  it('Mint and Sign Together', async () => {
     expect(await dao.balanceOf(ownerAddress)).to.eq(10)
 
     expect(await dao.mintable()).to.eq(true)
@@ -386,7 +386,7 @@ describe('Dao', () => {
     expect(await dao.quorum()).to.eq(60)
   })
 
-  it('Revert GT Transfer and Transfer From', async () => {
+  it('Revert Transfer and Transfer From', async () => {
     await expect(
       dao.transfer(signers[1].address, 1)
     ).to.be.revertedWith('DAO: transfer is prohibited')
@@ -866,7 +866,7 @@ describe('Dao', () => {
     // await expect(govToken.burn(0, [])).to.be.revertedWith('DAO: adapters error')
   })
 
-  it('Move and Burn GT', async () => {
+  it('Move and Burn', async () => {
     const timestamp = dayjs().unix()
 
     const friendAddress = signers[1].address

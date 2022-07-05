@@ -1,8 +1,9 @@
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { expect } from 'chai'
 import { constants } from 'ethers'
-import { parseEther } from 'ethers/lib/utils'
+import { parseEther, verifyMessage } from 'ethers/lib/utils'
 import { ethers } from 'hardhat'
+import dayjs from 'dayjs'
 
 import {
   Dao,
@@ -15,16 +16,16 @@ import {
   
   NamedToken__factory,
 
-  ExitModule,
-  ExitModule__factory,
-  
   Auction,
   Auction__factory,
 
-} from '../../typechain-types'
-import { executeTx } from '../utils'
+  OffchainVotingModule,
+  OffchainVotingModule__factory
 
-describe('ExitModule', () => {
+} from '../../typechain-types'
+import { executeTx, createData, createTxHash } from '../utils'
+
+describe('OffchainVotingModule', () => {
   let auction: Auction
 
   let factory: Factory
@@ -33,7 +34,7 @@ describe('ExitModule', () => {
 
   let govToken: GovToken
 
-  let offchainVotingModule: ExitModule
+  let offchainVotingModule: OffchainVotingModule
 
   let signers: SignerWithAddress[]
 
@@ -69,7 +70,7 @@ describe('ExitModule', () => {
 
     dao = Dao__factory.connect(await factory.daoAt(0), signers[0])
 
-    offchainVotingModule = await new ExitModule__factory(signers[0]).deploy()
+    offchainVotingModule = await new  OffchainVotingModule__factory(signers[0]).deploy()
 
     await executeTx(
       dao.address,
@@ -82,64 +83,7 @@ describe('ExitModule', () => {
     )
 
     govToken = GovToken__factory.connect(await dao.govToken(), signers[0])
-  })
 
-  it('Create, Exit, Disable, Read', async () => {
-    const friendAddress = signers[1].address
-
-    const usdc = await new NamedToken__factory(signers[0]).deploy('USDC', 'USDC')
-
-    const btc = await new NamedToken__factory(signers[0]).deploy('BTC', 'BTC')
-
-    await executeTx(
-      dao.address,
-      offchainVotingModule.address,
-      'createExitOffer',
-      ['address', 'uint256', 'uint256', 'address[]', 'uint256[]'],
-      [
-        friendAddress,
-        parseEther('1'),
-        parseEther('0.07'),
-        [usdc.address, btc.address],
-        [parseEther('0.9'), parseEther('1.3')]
-      ],
-      0,
-      signers[0]
-    )
-
-    await expect(
-      offchainVotingModule.connect(signers[1]).exit(dao.address, 0)
-    ).to.be.revertedWith('ERC20: insufficient allowance')
-
-    expect(await govToken.totalSupply()).to.eql(constants.Zero)
-
-    await executeTx(
-      dao.address,
-      auction.address,
-      'createPrivateOffer',
-      ['address', 'address', 'uint256', 'uint256'],
-      [friendAddress, usdc.address, 0, parseEther('2')],
-      0,
-      signers[0]
-    )
-
-    await auction.connect(signers[1]).buyPrivateOffer(dao.address, 0)
-
-    expect(await govToken.balanceOf(friendAddress))
-      .to.eql(parseEther('2'))
-      .to.eql(await govToken.totalSupply())
-
-    await expect(
-      offchainVotingModule.connect(signers[1]).exit(dao.address, 0)
-    ).to.be.revertedWith('ERC20: insufficient allowance')
-
-    await govToken
-      .connect(signers[1])
-      .approve(offchainVotingModule.address, parseEther('999'))
-
-    await expect(
-      offchainVotingModule.connect(signers[1]).exit(dao.address, 0)
-    ).to.be.revertedWith('DAO: only for permitted')
 
     await executeTx(
       dao.address,
@@ -153,86 +97,201 @@ describe('ExitModule', () => {
 
     expect(await dao.containsPermitted(offchainVotingModule.address)).to.eq(true)
 
-    await expect(
-      offchainVotingModule.connect(signers[1]).exit(dao.address, 0)
-    ).to.be.revertedWith('ERC20: transfer amount exceeds balance')
-
-    await usdc.transfer(dao.address, parseEther('1'))
-    await btc.transfer(dao.address, parseEther('2'))
-
-    await expect(
-      offchainVotingModule.connect(signers[1]).exit(dao.address, 0)
-    ).to.be.revertedWith('Address: insufficient balance')
-
-    await signers[0].sendTransaction({
-      to: dao.address,
-      value: parseEther('10')
-    })
-
-    await executeTx(
-      dao.address,
-      govToken.address,
-      'changeBurnable',
-      ['bool'],
-      [false],
-      0,
-      signers[0]
-    )
-
-    await expect(
-      await offchainVotingModule.connect(signers[1]).exit(dao.address, 0)
-    ).to.changeEtherBalances(
-      [dao, signers[1], offchainVotingModule],
-      [parseEther('-0.07'), parseEther('0.07'), parseEther('0')]
-    )
-
-    expect(await ethers.provider.getBalance(offchainVotingModule.address)).to.eql(
-      constants.Zero
-    )
-
-    expect(await ethers.provider.getBalance(dao.address)).to.eql(
-      parseEther('9.93')
-    )
-
-    expect(await usdc.balanceOf(friendAddress)).to.eql(parseEther('0.9'))
-    expect(await btc.balanceOf(friendAddress)).to.eql(parseEther('1.3'))
-
-    // Create and Disable
-
-    await executeTx(
-      dao.address,
-      offchainVotingModule.address,
-      'createExitOffer',
-      ['address', 'uint256', 'uint256', 'address[]', 'uint256[]'],
-      [
-        friendAddress,
-        parseEther('1'),
-        parseEther('0.07'),
-        [usdc.address, btc.address],
-        [parseEther('0.9'), parseEther('1.3')]
-      ],
-      0,
-      signers[0]
-    )
-
-    expect(
-      (await offchainVotingModule.exitOffers(dao.address, 1)).isActive
-    ).to.eq(true)
-
-    await executeTx(
-      dao.address,
-      offchainVotingModule.address,
-      'disableExitOffer',
-      ['uint256'],
-      [1],
-      0,
-      signers[0]
-    )
-
-    expect(
-      (await offchainVotingModule.exitOffers(dao.address, 1)).isActive
-    ).to.eq(false)
-
-    expect((await offchainVotingModule.getOffers(dao.address)).length).to.eq(2)
   })
+
+  it('create gov token by permitted proxy ',async () => {
+    
+      
+      // await executeTx(
+      //   dao.address,
+      //   dao.address,
+      //   'addPermitted',
+      //   ['address'],
+      //   [offchainVotingModule.address],
+      //   0,
+      //   signers[0]
+      // )
+
+      // expect(await dao.containsPermitted(offchainVotingModule.address)).to.eq(true)
+
+
+      const timestamp = dayjs().unix();
+      let Tx = {
+        target: dao.address,
+        data: createData('changeQuorum', ['uint8'], [60]),
+        value: 0,
+        nonce: 0,
+        timestamp
+      }
+
+      let txHash = createTxHash(
+        offchainVotingModule.address,
+        Tx.target,
+        Tx.data,
+        Tx.value,
+        Tx.nonce,
+        Tx.timestamp,
+        1337
+      )
+
+      const sig = await signers[0].signMessage(txHash)
+      expect(verifyMessage(txHash, sig)).to.eq(ownerAddress)
+
+      
+      console.log('signer::', signers[0].address, signers[1].address);
+      // 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 0x70997970C51812dc3A010C7d01b50e0d17dc79C8
+
+      expect(
+        await offchainVotingModule.createAndExecute(
+          dao.address,
+          Tx.target,
+          Tx.data,
+          Tx.value,
+          Tx.nonce,
+          Tx.timestamp,
+          sig
+        )
+      ).to.emit(dao, 'changeQuorum')
+
+  })
+  it('Create, Execute, Disable, Read', async () => {
+  
+    
+    const timestamp = dayjs().unix();
+
+    let Tx = {
+      target: govToken.address,
+      data: createData('mint', ['address', 'uint256'], [ownerAddress, 10000]),
+      value: 0,
+      nonce: 0,
+      timestamp
+    }
+
+    let txHash = createTxHash(
+      offchainVotingModule.address,
+      Tx.target,
+      Tx.data,
+      Tx.value,
+      Tx.nonce,
+      Tx.timestamp,
+      1337
+    )
+  
+    const sig = await signers[0].signMessage(txHash)
+    expect(verifyMessage(txHash, sig)).to.eq(ownerAddress)
+    
+    console.log('signer::', signers[0].address, signers[1].address);
+    // 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 0x70997970C51812dc3A010C7d01b50e0d17dc79C8
+
+    expect(
+      await offchainVotingModule.createProposal(
+        dao.address,
+        Tx.target,
+        Tx.data,
+        Tx.value,
+        Tx.nonce,
+        Tx.timestamp,
+        sig
+      )
+    ).to.emit(dao, 'changeQuorum')
+    
+    expect(await govToken.balanceOf(ownerAddress)).to.eq(0)
+    
+    
+    expect(
+      (await offchainVotingModule.proposals(dao.address, 0)).isActive
+    ).to.eq(true)
+    
+    let proposal = await offchainVotingModule.getProposals(dao.address);
+    console.log(proposal);
+
+
+    await offchainVotingModule.connect(signers[0]).execute(dao.address, 0)
+
+    expect(await govToken.balanceOf(ownerAddress)).to.eq(10000)
+
+
+    expect((await offchainVotingModule.getProposals(dao.address)).length).to.eq(1)
+  })
+
+
+  it('deposit, withdraw from the dao vault',async () => {
+    const friendAddress = signers[1].address
+
+    const usdc = await new NamedToken__factory(signers[0]).deploy(
+      'USDC',
+      'USDC'
+    )
+    const timestamp = dayjs().unix();
+
+    let Tx = {
+      target: usdc.address,
+      data: createData('transfer', ['address', 'uint256'], [signers[1].address, 100]),
+      value: 0,
+      nonce: 0,
+      timestamp
+    }
+
+    let txHash = createTxHash(
+      offchainVotingModule.address,
+      Tx.target,
+      Tx.data,
+      Tx.value,
+      Tx.nonce,
+      Tx.timestamp,
+      1337
+    )
+  
+    const sig = await signers[0].signMessage(txHash)
+    expect(verifyMessage(txHash, sig)).to.eq(ownerAddress)
+    
+    console.log('signer::', signers[0].address, signers[1].address);
+    // 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 0x70997970C51812dc3A010C7d01b50e0d17dc79C8
+
+    expect(
+      await offchainVotingModule.createProposal(
+        dao.address,
+        Tx.target,
+        Tx.data,
+        Tx.value,
+        Tx.nonce,
+        Tx.timestamp,
+        sig
+      )
+    ).to.emit(dao, 'changeQuorum')
+    
+    expect(
+      (await offchainVotingModule.proposals(dao.address, 0)).isActive
+    ).to.eq(true)
+    
+    let proposal = await offchainVotingModule.getProposals(dao.address);
+    console.log(proposal);
+
+    console.log('dao usdc balance:: ', await usdc.balanceOf(dao.address));
+
+    
+    await usdc.transfer(dao.address, 1000);
+    expect(await usdc.balanceOf(dao.address)).to.eq(1000);
+
+
+    
+    console.log('dao usdc balance:: ', await usdc.balanceOf(dao.address));
+    console.log('ownerAddress usdc balance:: ', await usdc.balanceOf(ownerAddress));
+    
+    console.log('ownerAddress usdc balance:: ', await usdc.balanceOf(signers[1].address));
+   
+    await offchainVotingModule.connect(signers[0]).execute(dao.address, 0)
+
+    console.log('dao usdc balance:: ', await usdc.balanceOf(dao.address));
+    console.log('ownerAddress usdc balance:: ', await usdc.balanceOf(ownerAddress));
+      console.log('ownerAddress usdc balance:: ', await usdc.balanceOf(signers[1].address));
+   
+    // expect(await govToken.balanceOf(ownerAddress)).to.eq(10000)
+
+
+    expect((await offchainVotingModule.getProposals(dao.address)).length).to.eq(1)
+
+
+  })
+
 })

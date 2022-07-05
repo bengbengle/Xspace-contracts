@@ -12,7 +12,6 @@ import "../interfaces/IDao.sol";
 contract GovToken is ReentrancyGuard, ERC20, ERC20Permit {
     address public immutable dao;
 
-    address public immutable owner;
     address public auction;
 
     bool public mintable = true;
@@ -26,7 +25,6 @@ contract GovToken is ReentrancyGuard, ERC20, ERC20Permit {
         address _dao
     ) ERC20(_name, _symbol) ERC20Permit(_name) {
         dao = _dao;
-        owner = msg.sender;
         auction = msg.sender;
     }
 
@@ -35,12 +33,13 @@ contract GovToken is ReentrancyGuard, ERC20, ERC20Permit {
         _;
     }
 
-    modifier onlyOwner() {
-        require(msg.sender == owner, "GovToken: caller is not the owner");
+    modifier onlyDaoAuction() {
+        require(msg.sender == dao || msg.sender == auction, "GovToken: caller is not the dao");
         _;
     }
 
-    function mint(address _to, uint256 _amount) external onlyOwner returns (bool)
+
+    function mint(address _to, uint256 _amount) external onlyDaoAuction returns (bool)
     {
         require(mintable, "GovToken: minting is disabled");
         _mint(_to, _amount);

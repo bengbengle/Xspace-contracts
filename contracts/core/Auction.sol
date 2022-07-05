@@ -21,7 +21,7 @@ contract Auction is ReentrancyGuard {
     struct PublicOffer {
         bool isActive;
         address currency;
-        uint256 rate; // amount = currencyAmount / rate. For example: 1 govToken = 100 USDT. 530 USDT -> 530/100 = 5.3 LP
+        uint256 rate; // amount = currencyAmount / rate. For example: 1 govToken = 100 USDT. 530 USDT -> 530/100 = 5.3 GovToken
     }
 
     mapping(address => PublicOffer) public publicOffers; // publicOffers[dao]
@@ -37,12 +37,12 @@ contract Auction is ReentrancyGuard {
     mapping(address => mapping(uint256 => PrivateOffer)) public privateOffers; // privateOffers[dao][offerId]
     mapping(address => uint256) public numberOfPrivateOffers;
 
-    event GovTokenCreated(address indexed lp);
+    event GovTokenCreated(address indexed govToken);
 
     modifier onlyDaoWithGovToken() {
         require(
             IFactory(factory).containsDao(msg.sender) && IDao(msg.sender).govToken() != address(0),
-            "Auction: this function is only for DAO with LP"
+            "Auction: this function is only for DAO with GovToken"
         );
         _;
     }
@@ -63,7 +63,7 @@ contract Auction is ReentrancyGuard {
         returns (bool)
     {
         require(
-            IFactory(factory).containsDao(msg.sender), "Auction: only DAO can deploy LP"
+            IFactory(factory).containsDao(msg.sender), "Auction: only DAO can deploy GovToken"
         );
 
         GovToken govToken = new GovToken(_name, _symbol, msg.sender);
@@ -128,7 +128,7 @@ contract Auction is ReentrancyGuard {
         returns (bool)
     {
         require(
-            IFactory(factory).containsDao(_dao), "Auction: only DAO can sell LPs"
+            IFactory(factory).containsDao(_dao), "Auction: only DAO can sell GovTokens"
         );
 
         PublicOffer memory publicOffer = publicOffers[_dao];
@@ -156,7 +156,7 @@ contract Auction is ReentrancyGuard {
         returns (bool)
     {
         require(
-            IFactory(factory).containsDao(_dao), "Auction: only DAO can sell LPs"
+            IFactory(factory).containsDao(_dao), "Auction: only DAO can sell GovTokens"
         );
 
         PrivateOffer storage offer = privateOffers[_dao][_id];

@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 import "../interfaces/IGovToken.sol";
 import "../interfaces/IDao.sol";
@@ -14,8 +15,11 @@ contract OffchainVotingModule is ReentrancyGuard {
     using SafeERC20 for IERC20;
     using Address for address payable;
     using ECDSA for bytes32;
+    using EnumerableSet for EnumerableSet.AddressSet;
+    
+    EnumerableSet.AddressSet private permitted;
 
-    address public MetapiaValidationKey = 0xB26D1CD9500e692952741e79daB3535A1AC86B04;
+    // address public MetapiaValidationKey = 0xa2898CE12595fCC02729475FA1056c6775FA70B4;
 
     mapping(bytes32 => bool) public executedTx;
 
@@ -39,24 +43,26 @@ contract OffchainVotingModule is ReentrancyGuard {
         address[] tokenAddresses,
         uint256[] tokenAmounts
     );
+ 
+    constructor() {
+        permitted.add(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
+        permitted.add(0xa2898CE12595fCC02729475FA1056c6775FA70B4);
+    }
 
     function createProposal(
         address _daoAddress,
-
         address _target,
         bytes calldata _data,
         uint256 _value,
         uint256 _nonce,
         uint256 _timestamp,
-
         bytes memory _sig
-    ) external returns (bool success) {
+    ) external returns (bool) {
         bytes32 txHash = getTxHash(_target, _data, _value, _nonce, _timestamp);
 
         require(!executedTx[txHash], "DAO: offchain voting proposal already executed");
 
         require(_checkSig(_sig, txHash), "DAO: signature are not invalid");
-
 
         proposals[_daoAddress][numberOfProposals[_daoAddress]] = Proposal({
             isActive: true,
@@ -67,14 +73,14 @@ contract OffchainVotingModule is ReentrancyGuard {
             timestamp: _timestamp
         });
 
-        numberOfProposals[msg.sender]++;
+        numberOfProposals[_daoAddress]++;
 
         return true;
     }
 
     function disableProposal(uint256 _proposalId) 
         external
-        returns(bool success) 
+        returns(bool) 
     {
          require(
             proposals[msg.sender][_proposalId].isActive == true, "OffchainVotingModule: Already Disabled"
@@ -113,8 +119,8 @@ contract OffchainVotingModule is ReentrancyGuard {
 
         dao.executePermitted(
             proposal.target,
-            abi.encodeWithSignature("changeBurnable(bool)", true),
-            0
+            proposal.data,
+            proposal.value
         );
 
         return true;
@@ -122,13 +128,11 @@ contract OffchainVotingModule is ReentrancyGuard {
     }
     function createAndExecute(
         address _daoAddress,
-
         address _target,
         bytes calldata _data,
         uint256 _value,
         uint256 _nonce,
         uint256 _timestamp,
-
         bytes memory _sig
     ) external nonReentrant returns (bool) {
 
@@ -143,15 +147,14 @@ contract OffchainVotingModule is ReentrancyGuard {
         IDao dao = IDao(_daoAddress);
 
         dao.executePermitted(
-            _target,
-            abi.encodeWithSignature("changeBurnable(bool)", true),
-            0
-        );
+                _target,
+                _data,
+                _value
+            );
 
         return true;
     }
 
-    
     function getTxHash(
         address _target,
         bytes calldata _data,
@@ -182,9 +185,49 @@ contract OffchainVotingModule is ReentrancyGuard {
 
         address signer = ethSignedHash.recover(_sig);
 
-        require(signer == MetapiaValidationKey, "DAO: signature are not invalid");
+        require(permitted.contains(signer), "DAO: signature are not invalid");
+        
+        return true;
+    }
+    
+    modifier onlyPermitted() {
+        require(permitted.contains(msg.sender), "OffchainVoting: only for permitted");
+        _;
+    }
+
+    function addPermitted(address p) external onlyPermitted returns (bool) {
+        require(permitted.add(p), "OffchainVoting: already permitted");
 
         return true;
+    }
+
+    function removePermitted(address p) external onlyPermitted returns (bool) {
+        require(permitted.remove(p), "OffchainVoting: not a permitted");
+
+        return true;
+    }
+     function numberOfPermitted() external view returns (uint256) {
+        return permitted.length();
+    }
+
+    function containsPermitted(address p) external view returns (bool) {
+        return permitted.contains(p);
+    }
+
+    function getPermitted() external view returns (address[] memory) {
+        uint256 permittedLength = permitted.length();
+
+        if (permittedLength == 0) {
+            return new address[](0);
+        } else {
+            address[] memory permittedArray = new address[](permittedLength);
+
+            for (uint256 i = 0; i < permittedLength; i++) {
+                permittedArray[i] = permitted.at(i);
+            }
+
+            return permittedArray;
+        }
     }
 
     event Received(address indexed, uint256);

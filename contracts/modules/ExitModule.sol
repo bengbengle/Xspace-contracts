@@ -64,8 +64,7 @@ contract ExitModule is ReentrancyGuard {
         returns (bool success)
     {
         require(
-            exitOffers[msg.sender][_offerId].isActive == true,
-            "ExitModule: Already Disabled"
+            exitOffers[msg.sender][_offerId].isActive == true, "ExitModule: Already Disabled"
         );
 
         exitOffers[msg.sender][_offerId].isActive = false;
@@ -121,8 +120,6 @@ contract ExitModule is ReentrancyGuard {
         IGovToken(govToken).burn(
             offer.amount,
             emptyAddressArray
-            // emptyAddressArray,
-            // emptyAddressArray
         );
 
         for (uint256 i = 0; i < offer.tokenAddresses.length; i++) {

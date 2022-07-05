@@ -100,8 +100,7 @@ contract Dao is ReentrancyGuard, ERC20, ERC1155TokenReceiver, ERC777TokensRecipi
 
     modifier onlyDao() {
         require(
-            msg.sender == address(this),
-            "DAO: this function is only for DAO"
+            msg.sender == address(this), "DAO: this function is only for DAO"
         );
         _;
     }
@@ -143,7 +142,6 @@ contract Dao is ReentrancyGuard, ERC20, ERC1155TokenReceiver, ERC777TokensRecipi
         bytes calldata _data,
         uint256 _value
     ) external nonReentrant returns (bool) {
-        // require(checkSubscription(), "DAO: subscription not paid");
 
         require(permitted.contains(msg.sender), "DAO: only for permitted");
 
@@ -180,7 +178,6 @@ contract Dao is ReentrancyGuard, ERC20, ERC1155TokenReceiver, ERC777TokensRecipi
         uint256 _timestamp,
         bytes[] memory _sigs
     ) external nonReentrant returns (bool) {
-        // require(checkSubscription(), "DAO: subscription not paid");
 
         require(balanceOf(msg.sender) > 0, "DAO: only for members");
 
