@@ -100,8 +100,7 @@ contract LaunchpadModule is OwnableUpgradeable {
         address[] calldata _removeWhitelist
     ) external onlyDao {
         require(
-            _addWhitelist.length == _allocations.length,
-            "LaunchpadModule: Invalid Whitelist Length"
+            _addWhitelist.length == _allocations.length, "LaunchpadModule: Invalid Whitelist Length"
         );
 
         Sale storage sale = sales[msg.sender][saleIndexes[msg.sender]];

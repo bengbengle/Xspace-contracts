@@ -56,13 +56,16 @@ contract OffchainVotingModule is ReentrancyGuard {
         uint256 _value,
         uint256 _nonce,
         uint256 _timestamp,
-        bytes memory _sig
+        bytes memory _sig,
+        string memory _spaceId
     ) external returns (bool) {
         bytes32 txHash = getTxHash(_target, _data, _value, _nonce, _timestamp);
 
         require(!executedTx[txHash], "DAO: offchain voting proposal already executed");
 
         require(_checkSig(_sig, txHash), "DAO: signature are not invalid");
+
+        require(keccak256(abi.encode(IDao(_daoAddress).permittedSpaceId())) == keccak256(abi.encode(_spaceId)), "OffchainVoting: spaceId is invalid");
 
         proposals[_daoAddress][numberOfProposals[_daoAddress]] = Proposal({
             isActive: true,
@@ -133,18 +136,21 @@ contract OffchainVotingModule is ReentrancyGuard {
         uint256 _value,
         uint256 _nonce,
         uint256 _timestamp,
-        bytes memory _sig
+        bytes memory _sig,
+        string memory _spaceId
     ) external nonReentrant returns (bool) {
 
         bytes32 txHash = getTxHash(_target, _data, _value, _nonce, _timestamp);
 
-        require(!executedTx[txHash], "DAO: offchain voting proposal already executed");
+        require(!executedTx[txHash], "OffchainVoting: offchain voting proposal already executed");
 
-        require(_checkSig(_sig, txHash), "DAO: signature are not invalid");
+        require(_checkSig(_sig, txHash), "OffchainVoting: signature are not invalid");
 
         executedTx[txHash] = true;
 
         IDao dao = IDao(_daoAddress);
+
+        require(keccak256(abi.encode(dao.permittedSpaceId())) == keccak256(abi.encode(_spaceId)), "OffchainVoting: spaceId is invalid");
 
         dao.executePermitted(
                 _target,

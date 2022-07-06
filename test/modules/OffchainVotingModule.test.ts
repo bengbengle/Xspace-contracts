@@ -40,6 +40,8 @@ describe('OffchainVotingModule', () => {
 
   let ownerAddress: string
 
+  let _spaceId: string = 'demo.eth' 
+
   beforeEach(async () => {
     signers = await ethers.getSigners()
     
@@ -95,25 +97,22 @@ describe('OffchainVotingModule', () => {
       signers[0]
     )
 
+    await executeTx(
+      dao.address,
+      dao.address,
+      'setPermittedSpaceId',
+      ['string'],
+      [_spaceId],
+      0,
+      signers[0]
+    )
+
     expect(await dao.containsPermitted(offchainVotingModule.address)).to.eq(true)
 
   })
 
   it('create gov token by permitted proxy ',async () => {
     
-      
-      // await executeTx(
-      //   dao.address,
-      //   dao.address,
-      //   'addPermitted',
-      //   ['address'],
-      //   [offchainVotingModule.address],
-      //   0,
-      //   signers[0]
-      // )
-
-      // expect(await dao.containsPermitted(offchainVotingModule.address)).to.eq(true)
-
 
       const timestamp = dayjs().unix();
       let Tx = {
@@ -149,7 +148,8 @@ describe('OffchainVotingModule', () => {
           Tx.value,
           Tx.nonce,
           Tx.timestamp,
-          sig
+          sig,
+          _spaceId
         )
       ).to.emit(dao, 'changeQuorum')
 
@@ -191,7 +191,8 @@ describe('OffchainVotingModule', () => {
         Tx.value,
         Tx.nonce,
         Tx.timestamp,
-        sig
+        sig,
+        _spaceId
       )
     ).to.emit(dao, 'changeQuorum')
     
@@ -256,7 +257,8 @@ describe('OffchainVotingModule', () => {
         Tx.value,
         Tx.nonce,
         Tx.timestamp,
-        sig
+        sig,
+        _spaceId
       )
     ).to.emit(dao, 'changeQuorum')
     

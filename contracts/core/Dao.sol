@@ -31,14 +31,13 @@ contract Dao is ReentrancyGuard, ERC20, ERC1155TokenReceiver, ERC777TokensRecipi
     // These addresses can rule without voting
     EnumerableSet.AddressSet private permitted;
 
+    string public permittedSpaceId; // mapping[dao][spaceId]
+
     // These contracts help burn GovToken's
     EnumerableSet.AddressSet private adapters;
 
     // Factory Address
-    address public immutable factory;
-
-    // Auction Address
-    // address public immutable auction;
+    address public factory;
 
     // TODO: NFT token address
     address public govToken = address(0); 
@@ -115,8 +114,6 @@ contract Dao is ReentrancyGuard, ERC20, ERC1155TokenReceiver, ERC777TokensRecipi
         uint256[] memory _shares
     ) ERC20(_name, _symbol) {
         factory = msg.sender;
-
-        // auction = IFactory(msg.sender).auction();
 
         require(
             _quorum >= 1 && _quorum <= 100,
@@ -435,6 +432,12 @@ contract Dao is ReentrancyGuard, ERC20, ERC1155TokenReceiver, ERC777TokensRecipi
         return true;
     }
 
+    
+    function setPermittedSpaceId(string  memory _spaceId) external onlyDao returns (bool) {
+        permittedSpaceId = _spaceId;
+        return true;
+    }
+
     /*----Gov Token---------------------------------------------*/
 
     function setGovToken(address _govToken) external returns (bool) {
@@ -443,6 +446,16 @@ contract Dao is ReentrancyGuard, ERC20, ERC1155TokenReceiver, ERC777TokensRecipi
         // require(msg.sender == auction, "DAO: only Auction can set Gov Token");
 
         govToken = _govToken;
+
+        return true;
+    }
+
+     function setFactory(address _factory) external returns (bool) {
+        require(
+            factory == msg.sender, "DAO: no access set factory address "
+        );
+
+        factory = _factory;
 
         return true;
     }
