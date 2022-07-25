@@ -1,0 +1,10 @@
+# Solidity API
+
+## NamedNFT
+
+### constructor
+
+```solidity
+constructor(string _name, string _symbol) public
+```
+

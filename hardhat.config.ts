@@ -8,6 +8,7 @@ import 'hardhat-contract-sizer'
 import 'hardhat-gas-reporter'
 import 'hardhat-tracer'
 import 'solidity-coverage'
+import 'solidity-docgen'
 import 'dotenv/config'
 
 import { HardhatUserConfig } from 'hardhat/config'
@@ -202,6 +203,11 @@ const config: HardhatUserConfig = {
     enabled: true,
     currency: 'USD',
     coinmarketcap: process.env.CMC_KEY
+  },
+
+  docgen: {
+    pages: "files",
+    outputDir: 'docs'
   }
 }
 

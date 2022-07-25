@@ -83,61 +83,61 @@ contract DaoViewer {
         }
     }
 
-    function getShare(address _dao, address[] memory _users)
-        external
-        view
-        returns (
-            uint256 share,
-            uint256 totalSupply,
-            uint8 quorum
-        )
-    {
-        quorum = IDao(_dao).quorum();
-        totalSupply = IERC20Metadata(_dao).totalSupply();
+    // function getShare(address _dao, address[] memory _users)
+    //     external
+    //     view
+    //     returns (
+    //         uint256 share,
+    //         uint256 totalSupply,
+    //         uint8 quorum
+    //     )
+    // {
+    //     quorum = IDao(_dao).quorum();
+    //     totalSupply = IERC20Metadata(_dao).totalSupply();
 
-        if (_users.length == 0) {
-            return (0, totalSupply, quorum);
-        }
+    //     if (_users.length == 0) {
+    //         return (0, totalSupply, quorum);
+    //     }
 
-        share = 0;
+    //     share = 0;
 
-        for (uint256 i = 0; i < _users.length; i++) {
-            share += IERC20Metadata(_dao).balanceOf(_users[i]);
-        }
+    //     for (uint256 i = 0; i < _users.length; i++) {
+    //         share += IERC20Metadata(_dao).balanceOf(_users[i]);
+    //     }
 
-        return (share, totalSupply, quorum);
-    }
+    //     return (share, totalSupply, quorum);
+    // }
 
-    function getShares(address _dao, address[][] memory _users)
-        external
-        view
-        returns (
-            uint256[] memory shares,
-            uint256 totalSupply,
-            uint8 quorum
-        )
-    {
-        quorum = IDao(_dao).quorum();
-        totalSupply = IERC20Metadata(_dao).totalSupply();
+    // function getShares(address _dao, address[][] memory _users)
+    //     external
+    //     view
+    //     returns (
+    //         uint256[] memory shares,
+    //         uint256 totalSupply,
+    //         uint8 quorum
+    //     )
+    // {
+    //     quorum = IDao(_dao).quorum();
+    //     totalSupply = IERC20Metadata(_dao).totalSupply();
 
-        shares = new uint256[](_users.length);
+    //     shares = new uint256[](_users.length);
 
-        for (uint256 i = 0; i < _users.length; i++) {
-            if (_users[i].length == 0) {
-                shares[i] = 0;
-            } else {
-                uint256 share = 0;
+    //     for (uint256 i = 0; i < _users.length; i++) {
+    //         if (_users[i].length == 0) {
+    //             shares[i] = 0;
+    //         } else {
+    //             uint256 share = 0;
 
-                for (uint256 j = 0; j < _users[i].length; j++) {
-                    share += IERC20Metadata(_dao).balanceOf(_users[i][j]);
-                }
+    //             for (uint256 j = 0; j < _users[i].length; j++) {
+    //                 share += IERC20Metadata(_dao).balanceOf(_users[i][j]);
+    //             }
 
-                shares[i] = share;
-            }
-        }
+    //             shares[i] = share;
+    //         }
+    //     }
 
-        return (shares, totalSupply, quorum);
-    }
+    //     return (shares, totalSupply, quorum);
+    // }
 
     function balances(address[] memory users, address[] memory tokens)
         external
@@ -165,19 +165,19 @@ contract DaoViewer {
         return addrBalances;
     }
 
-    function getHashStatuses(address _dao, bytes32[] memory _txHashes)
-        external
-        view
-        returns (bool[] memory)
-    {
-        bool[] memory hashStatuses = new bool[](_txHashes.length);
+    // function getHashStatuses(address _dao, bytes32[] memory _txHashes)
+    //     external
+    //     view
+    //     returns (bool[] memory)
+    // {
+    //     bool[] memory hashStatuses = new bool[](_txHashes.length);
 
-        for (uint256 i = 0; i < _txHashes.length; i++) {
-            hashStatuses[i] = IDao(_dao).executedTx(_txHashes[i]);
-        }
+    //     for (uint256 i = 0; i < _txHashes.length; i++) {
+    //         hashStatuses[i] = IDao(_dao).executedTx(_txHashes[i]);
+    //     }
 
-        return hashStatuses;
-    }
+    //     return hashStatuses;
+    // }
 
     struct DaoConfiguration {
         bool gtMintable;

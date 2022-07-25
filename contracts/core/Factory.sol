@@ -19,6 +19,9 @@ contract Factory is Ownable {
    
     EnumerableSet.AddressSet private daos;
 
+    /**
+    * @notice 
+    */
     function create(
         string memory _daoName,
         string memory _daoSymbol,

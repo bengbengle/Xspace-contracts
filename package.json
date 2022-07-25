@@ -8,6 +8,8 @@
     "compile": "hardhat compile",
     "test": "hardhat test",
     "coverage": "hardhat coverage",
+    "docgen": "hardhat docgen",
+    "serve": "yarn compile && yarn docgen && mkdocs serve",
     "lint": "eslint . --fix",
     "deploy:rinkeby": "npx hardhat run --network rinkeby scripts/core/testnetDeploy.ts",
     "deploy:all": "yarn clean && yarn compile && yarn deploy:rinkeby",
@@ -46,6 +48,7 @@
     "prettier": "^2.5.1",
     "solhint": "^3.3.7",
     "solidity-coverage": "^0.7.20",
+    "solidity-docgen": "^0.6.0-beta.22",
     "ts-node": "^10.7.0",
     "typechain": "^7.0.0",
     "typescript": "^4.6.2"
