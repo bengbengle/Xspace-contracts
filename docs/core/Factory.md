@@ -1,4 +1,4 @@
-# Solidity API
+
 
 ## Factory
 
@@ -26,7 +26,17 @@ struct EnumerableSet.AddressSet daos
 function create(string _daoName, string _daoSymbol, uint8 _quorum, address[] _partners, uint256[] _shares) external returns (bool)
 ```
 
-@notice
+create new DAO
+
+_create new DAO_
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| _daoName | string | The name of the DAO |
+| _daoSymbol | string | The symbol of the Dao |
+| _quorum | uint8 | the mimimum quorum of the DAO |
+| _partners | address[] | The partners address of the DAO |
+| _shares | uint256[] | The shares of the each partners |
 
 ### createMultiSigWallet
 

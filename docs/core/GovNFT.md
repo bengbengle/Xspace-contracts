@@ -1,4 +1,4 @@
-# Solidity API
+
 
 ## MyToken
 
@@ -79,6 +79,19 @@ function mint(address _to) external returns (bool)
 ```solidity
 function burn(uint256 _tokenId, address[] _tokens) external returns (bool)
 ```
+
+burn a new token for the given tokenid
+
+_burn a new token for the given tokenid_
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| _tokenId | uint256 | The tokenId of the token to burn |
+| _tokens | address[] | The tokenids of tokens to burn |
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | bool | true if the token was burned, false otherwise |
 
 ### changeMintable
 

@@ -595,12 +595,116 @@
       
       
         <label class="md-nav__link" for="__nav_3">
+          Mocks
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Mocks" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Mocks
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mocks/Adapter/" class="md-nav__link">
+        Adapter
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mocks/NamedNFT/" class="md-nav__link">
+        NamedNFT
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mocks/NamedToken/" class="md-nav__link">
+        NamedToken
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mocks/PayableFunction/" class="md-nav__link">
+        PayableFunction
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mocks/Token/" class="md-nav__link">
+        Token
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
           Modules
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Modules" data-md-level="1">
-        <label class="md-nav__title" for="__nav_3">
+        <label class="md-nav__title" for="__nav_4">
           <span class="md-nav__icon md-icon"></span>
           Modules
         </label>
@@ -665,22 +769,36 @@
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_4">
+        <label class="md-nav__link" for="__nav_5">
           Viewers
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Viewers" data-md-level="1">
-        <label class="md-nav__title" for="__nav_4">
+        <label class="md-nav__title" for="__nav_5">
           <span class="md-nav__icon md-icon"></span>
           Viewers
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../viewers/AdvancedViewer/" class="md-nav__link">
+        AdvancedViewer
+      </a>
+    </li>
+  
+
+            
           
             
               
@@ -838,7 +956,44 @@
 <h3 id="create">create</h3>
 <pre><code class="language-solidity">function create(string _daoName, string _daoSymbol, uint8 _quorum, address[] _partners, uint256[] _shares) external returns (bool)
 </code></pre>
-<p>create a dao</p>
+<p>create new DAO</p>
+<p><em>create new DAO</em></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>_daoName</td>
+<td>string</td>
+<td>The name of the DAO</td>
+</tr>
+<tr>
+<td>_daoSymbol</td>
+<td>string</td>
+<td>The symbol of the Dao</td>
+</tr>
+<tr>
+<td>_quorum</td>
+<td>uint8</td>
+<td>the mimimum quorum of the DAO</td>
+</tr>
+<tr>
+<td>_partners</td>
+<td>address[]</td>
+<td>The partners address of the DAO</td>
+</tr>
+<tr>
+<td>_shares</td>
+<td>uint256[]</td>
+<td>The shares of the each partners</td>
+</tr>
+</tbody>
+</table>
 <h3 id="createmultisigwallet">createMultiSigWallet</h3>
 <pre><code class="language-solidity">function createMultiSigWallet(string _daoName, string _daoSymbol, uint8 _quorum, address[] _partners) external returns (bool)
 </code></pre>

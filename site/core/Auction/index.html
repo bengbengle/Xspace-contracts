@@ -637,12 +637,116 @@
       
       
         <label class="md-nav__link" for="__nav_3">
+          Mocks
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Mocks" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Mocks
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mocks/Adapter/" class="md-nav__link">
+        Adapter
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mocks/NamedNFT/" class="md-nav__link">
+        NamedNFT
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mocks/NamedToken/" class="md-nav__link">
+        NamedToken
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mocks/PayableFunction/" class="md-nav__link">
+        PayableFunction
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mocks/Token/" class="md-nav__link">
+        Token
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
           Modules
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Modules" data-md-level="1">
-        <label class="md-nav__title" for="__nav_3">
+        <label class="md-nav__title" for="__nav_4">
           <span class="md-nav__icon md-icon"></span>
           Modules
         </label>
@@ -707,22 +811,36 @@
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_4">
+        <label class="md-nav__link" for="__nav_5">
           Viewers
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Viewers" data-md-level="1">
-        <label class="md-nav__title" for="__nav_4">
+        <label class="md-nav__title" for="__nav_5">
           <span class="md-nav__icon md-icon"></span>
           Viewers
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../viewers/AdvancedViewer/" class="md-nav__link">
+        AdvancedViewer
+      </a>
+    </li>
+  
+
+            
           
             
               
@@ -950,24 +1068,189 @@
 <h3 id="setfactory">setFactory</h3>
 <pre><code class="language-solidity">function setFactory(address _factory) external returns (bool)
 </code></pre>
+<p>setup factory address</p>
+<p><em>factory address is used to point to the factory contract</em></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>_factory</td>
+<td>address</td>
+<td>The address of the factory</td>
+</tr>
+</tbody>
+</table>
 <h3 id="creategovtoken">createGovToken</h3>
 <pre><code class="language-solidity">function createGovToken(string _name, string _symbol) external returns (bool)
 </code></pre>
+<p>create new GovToken</p>
+<p><em>create new GovToken</em></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>_name</td>
+<td>string</td>
+<td>The name of the GovToken</td>
+</tr>
+<tr>
+<td>_symbol</td>
+<td>string</td>
+<td>The symbol of the GovToken</td>
+</tr>
+</tbody>
+</table>
 <h3 id="initpublicoffer">initPublicOffer</h3>
 <pre><code class="language-solidity">function initPublicOffer(bool _isActive, address _currency, uint256 _rate) external returns (bool)
 </code></pre>
+<p>create a public offer</p>
+<p><em>DAO can use this to create/enable/disable/changeCurrency/changeRate</em></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>_isActive</td>
+<td>bool</td>
+<td>true to enable, false to disable</td>
+</tr>
+<tr>
+<td>_currency</td>
+<td>address</td>
+<td>currency address</td>
+</tr>
+<tr>
+<td>_rate</td>
+<td>uint256</td>
+<td>rate</td>
+</tr>
+</tbody>
+</table>
 <h3 id="createprivateoffer">createPrivateOffer</h3>
 <pre><code class="language-solidity">function createPrivateOffer(address _recipient, address _currency, uint256 _currencyAmount, uint256 _amount) external returns (bool)
 </code></pre>
+<p>create private offer with _recipient address</p>
+<p><em>DAO can use this to create/enable/disable/changeCurrency/changeRate, isActive is default set true</em></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>_recipient</td>
+<td>address</td>
+<td>recipient address</td>
+</tr>
+<tr>
+<td>_currency</td>
+<td>address</td>
+<td>currency address</td>
+</tr>
+<tr>
+<td>_currencyAmount</td>
+<td>uint256</td>
+<td>currency amount</td>
+</tr>
+<tr>
+<td>_amount</td>
+<td>uint256</td>
+<td>amount</td>
+</tr>
+</tbody>
+</table>
 <h3 id="disableprivateoffer">disablePrivateOffer</h3>
 <pre><code class="language-solidity">function disablePrivateOffer(uint256 _id) external returns (bool)
 </code></pre>
+<p>disablePrivateOffer</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>_id</td>
+<td>uint256</td>
+<td>offer id</td>
+</tr>
+</tbody>
+</table>
 <h3 id="buypublicoffer">buyPublicOffer</h3>
 <pre><code class="language-solidity">function buyPublicOffer(address _dao, uint256 _amount) external returns (bool)
 </code></pre>
+<p>buy a public offer</p>
+<p><em>only DAO can sell GovTokens</em></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>_dao</td>
+<td>address</td>
+<td>DAO address</td>
+</tr>
+<tr>
+<td>_amount</td>
+<td>uint256</td>
+<td>amount</td>
+</tr>
+</tbody>
+</table>
 <h3 id="buyprivateoffer">buyPrivateOffer</h3>
 <pre><code class="language-solidity">function buyPrivateOffer(address _dao, uint256 _id) external returns (bool)
 </code></pre>
+<p>buy a private offer</p>
+<p><em>only DAO can sell GovTokens</em></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>_dao</td>
+<td>address</td>
+<td>DAO address</td>
+</tr>
+<tr>
+<td>_id</td>
+<td>uint256</td>
+<td>offer id</td>
+</tr>
+</tbody>
+</table>
 
               
             </article>
