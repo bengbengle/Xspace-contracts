@@ -201,11 +201,7 @@ contract LaunchpadModule is OwnableUpgradeable {
 
         totalBought[_dao][saleIndex] += currencyAmount;
 
-        IERC20Upgradeable(sale.currency).safeTransferFrom(
-            msg.sender,
-            _dao,
-            currencyAmount
-        );
+        IERC20Upgradeable(sale.currency).safeTransferFrom(msg.sender, _dao, currencyAmount);
 
         uint256 amount = (currencyAmount * 1 ether) / sale.rate;
 

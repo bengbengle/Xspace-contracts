@@ -79,9 +79,21 @@ async function main() {
 
 }
 
-main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error)
-    process.exit(1)
-  })
+// const verify_activity = async() => {
+//   const Activity = "0x2868E8319520b9dd46CE4cdA0F0993723078e71B"
+//    try {
+//     await run('verify:verify', {
+//       address: Activity,
+//       contract: 'contracts/activity/Activity.sol:Activity'
+//     })
+//   } catch(ex) {
+//     console.log('Verification problem (Dao)', ex)
+//   }
+// }
+
+// verify_activity()
+//   .then(() => process.exit(0))
+//   .catch((error) => {
+//     console.error(error)
+//     process.exit(1)
+//   })

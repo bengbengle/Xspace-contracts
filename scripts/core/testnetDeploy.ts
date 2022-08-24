@@ -7,14 +7,38 @@ import {
   Auction__factory,
   ExitModule__factory,
   OffchainVotingModule__factory,
-  Dao__factory
+  Dao__factory,
 } from '../../typechain-types'
+
+
+import {Activity__factory} from '../../typechain-types'
 
 dotenv.config()
 
-async function main() {
+const deploy_activity = async () => {
   const signers = await ethers.getSigners()
 
+  const activity = await new Activity__factory(signers[0]).deploy()
+
+  await activity.deployed()
+
+  
+  console.log('Activity:', activity.address)
+
+  try {
+    await run('verify:verify', {
+      address: activity.address,
+      contract: 'contracts/activity/Activity.sol:Activity'
+    })
+  } catch(ex) {
+    console.log('Verification problem (Activity)', ex)
+  }
+
+  console.log('Activity:', activity.address)
+}
+
+async function main() {
+  const signers = await ethers.getSigners()
 
   const factory = await new Factory__factory(signers[0]).deploy()
 
@@ -118,14 +142,12 @@ async function main() {
 
   console.log('DaoViewer:', daoViewer.address)
   
-
-  // console.log('Auction:', auction.address)
-  // console.log('Factory:', factory.address)
+ 
   console.log('owner:', signers[0].address);
 
 }
 
-main()
+deploy_activity()
   .then(() => process.exit(0))
   .catch((error) => {
     console.error(error)

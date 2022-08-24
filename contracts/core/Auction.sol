@@ -170,11 +170,7 @@ contract Auction is ReentrancyGuard {
 
         require(publicOffer.isActive, "Auction: this offer is disabled");
 
-        IERC20(publicOffer.currency).safeTransferFrom(
-            msg.sender,
-            _dao,
-            (_amount * publicOffer.rate) / 1e18
-        );
+        IERC20(publicOffer.currency).safeTransferFrom(msg.sender, _dao, (_amount * publicOffer.rate) / 1e18 );
 
         address govToken = IDao(_dao).govToken();
 
