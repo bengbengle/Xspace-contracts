@@ -44,8 +44,6 @@ describe('Auction', () => {
 
     ownerAddress = signers[0].address
 
-    // token = await new Token__factory(signers[0]).deploy()
-
     auction = await new Auction__factory(signers[0]).deploy()
 
     factory = await new Factory__factory(signers[0]).deploy()

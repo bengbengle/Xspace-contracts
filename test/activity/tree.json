@@ -1,0 +1,17 @@
+{
+    "distributor":"0xa8E7813150a988e7F20193983fA3017155F3C162",
+    "activityId": "1",
+    "tokenAddress": "0x732F0E74e71204398396Fc0Db4C6A6C13B56E3ed", 
+    "addresses": [
+        {
+            "recipient":"0xa8E7813150a988e7F20193983fA3017155F3C162",
+            "tokenAdress": "0x732F0E74e71204398396Fc0Db4C6A6C13B56E3ed",
+            "tokenAmount": "1"
+        },
+        {
+            "recipient":"0x7009E5c74B3b3f28e622909e5A987e6F0e915cB7",
+            "tokenAdress": "0x732F0E74e71204398396Fc0Db4C6A6C13B56E3ed",
+            "tokenAmount": "2"
+        }
+    ]
+}
