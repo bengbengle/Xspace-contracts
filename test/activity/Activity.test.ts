@@ -44,6 +44,7 @@ const init_tree = (
   };
   return _tree;
 };
+
 describe("Activity", () => {
   let activity: Activity;
   let token: Token;
@@ -65,16 +66,9 @@ describe("Activity", () => {
 
     activity = await new Activity__factory(signers[0]).deploy();
     token = await new Token__factory(signers[0]).deploy();
-
-    // const timestamp = dayjs().unix()
-  });
-
-  it("should deploy", async () => {
-    expect(activity.address).to.not.be.undefined;
   });
 
   it("Activity Create", async () => {
-    // 0x401cB83eD43013d7705CA3c742A15321b8DEde18
 
     let tokenAddress = '0x2441AC1a15cB95B34766913E660f423F267e0E70'
     let _id = 1;
@@ -89,6 +83,8 @@ describe("Activity", () => {
       token.address,
       _tree.addresses
     );
+
+
     const rootHash = tree.getRoot();
 
     let leaves = tree.expandLeaves();
@@ -97,33 +93,16 @@ describe("Activity", () => {
         leaf.recipient.toLowerCase() === list[1].toLowerCase()
     );
 
-    // console.log("tree:", tree, "rootHash:", rootHash, "leaf:", leaf);
-
     if (!leaf) return;
     let index = leaf.index;
     let proofs = tree.getProof(index);
-
-    // console.log("distributor", distributor, "  _id:", _id);
 
     console.log("addresses:");
     console.log("Merkle tree root hash:", rootHash);
     console.log("proofs", proofs);
     console.log("index", index);
     console.log("recipient", leaf.recipient);
-
-    // let activity_id = await activity.activityIds(list[0]);
-    // console.log("activity_id", activity_id.toNumber());
-
-    // await activity.start(activity_id.toNumber(), rootHash);
-
-    // let balance = await token.balanceOf(list[1])
-    
-    // console.log("balance.toNumber():", balance.toNumber());
-
-    // await activity.claim(list[0], activity_id, index, list[1].toLowerCase(), tokenAddress, 2, proofs);
-
-    // console.log("balance.toNumber():", balance.toNumber());
-
+ 
   });
 
   it("Activity Start", async () => {
@@ -134,26 +113,23 @@ describe("Activity", () => {
     let activity_id = await activity.activityIds(ownerAddress);
     console.log("activity_id", activity_id.toNumber());
 
-    
     const _tree = init_tree(ownerAddress, activity_id.toNumber(), token.address, [signers[0].address, signers[1].address]);
 
     tree = new MerkleTree(ownerAddress, activity_id.toNumber(), token.address, _tree.addresses);
+
+    await activity.start(activity_id.toNumber(), tree.getRoot());
     
+  });
+
+  it("Activity Claimed", async () => {
     
     let balance = await token.balanceOf(signers[0].address);
     console.log("balance.toNumber():", balance.toNumber());
-
-    await activity.start(activity_id.toNumber(), tree.getRoot());
 
     await activity.claim(ownerAddress, activity_id.toNumber(), 1, signers[1].address, token.address, 2, tree.getProof(1));
 
     balance = await token.balanceOf(signers[0].address);
     console.log("balance.toNumber():", balance.toNumber());
-  });
 
-  it("Activity Claimed", async () => {
-    const timestamp = dayjs().unix();
-
-    const friendAddress = signers[1].address;
   });
 });
