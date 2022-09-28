@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 
 import "../interfaces/IDao.sol";
 
-contract MyToken is ERC721, ERC721Enumerable, Ownable {
+contract GovNFT is ERC721, ERC721Enumerable, Ownable {
     using Counters for Counters.Counter;
 
     Counters.Counter private _tokenIdCounter;
@@ -36,7 +36,6 @@ contract MyToken is ERC721, ERC721Enumerable, Ownable {
     }
 
     // The following functions are overrides required by Solidity.
-
     function _beforeTokenTransfer(
         address from,
         address to,
@@ -65,7 +64,6 @@ contract MyToken is ERC721, ERC721Enumerable, Ownable {
 
     /**
      * @notice burn a new token for the given tokenid
-     * @dev burn a new token for the given tokenid
      * @param _tokenId The tokenId of the token to burn
      * @param _tokens The tokenids of tokens to burn
      * @return true if the token was burned, false otherwise
@@ -90,23 +88,41 @@ contract MyToken is ERC721, ERC721Enumerable, Ownable {
         return true;
     }
 
+     /**
+     * @notice change the mintable status of the nft token
+     * @param _mintable The new mintable status
+     * @return true if the status was changed, false otherwise
+     */
     function changeMintable(bool _mintable) external onlyDao returns (bool) {
         require(!mintableStatusFrozen, "GovToken: minting status is frozen");
         mintable = _mintable;
         return true;
     }
 
+    /**
+     * @notice change the burnable status of the nft token
+     * @param _burnable The new burnable status
+     * @return true if the status was changed, false otherwise
+     */
     function changeBurnable(bool _burnable) external onlyDao returns (bool) {
         require(!burnableStatusFrozen, "GovToken: burnable status is frozen");
         burnable = _burnable;
         return true;
     }
 
+    /**
+     * @notice freeze the mintable status of the nft token
+     * @return true if the status was frozen, false otherwise
+     */
     function freezeMintingStatus() external onlyDao returns (bool) {
         mintableStatusFrozen = true;
         return true;
     }
 
+    /**
+     * @notice freeze the burnable status of the nft token
+     * @return true if the status was frozen, false otherwise
+     */
     function freezeBurningStatus() external onlyDao returns (bool) {
         burnableStatusFrozen = true;
         return true;

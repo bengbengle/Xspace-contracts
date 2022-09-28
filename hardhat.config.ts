@@ -13,7 +13,7 @@ import 'dotenv/config'
 
 import { HardhatUserConfig } from 'hardhat/config'
 
-const vanityKey = 'af6287d2cc1a332357ba54b48850a07e600862ddd2c39adb9653a852e72b972f'
+// const vanityKey = ''
 
 const config: HardhatUserConfig = {
   networks: {
@@ -206,6 +206,7 @@ const config: HardhatUserConfig = {
   },
 
   docgen: {
+    collapseNewlines: true,
     pages: "files",
     outputDir: 'docs'
   }

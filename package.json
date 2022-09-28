@@ -9,7 +9,7 @@
     "test": "hardhat test",
     "coverage": "hardhat coverage",
     "docgen": "hardhat docgen",
-    "serve": "yarn docgen && mkdocs serve",
+    "serve": "mkdocs serve",
     "build": "mkdocs build",
     "lint": "eslint . --fix",
     "deploy:rinkeby": "npx hardhat run --network rinkeby scripts/core/testnetDeploy.ts",

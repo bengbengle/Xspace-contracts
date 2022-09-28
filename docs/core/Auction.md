@@ -2,6 +2,8 @@
 
 ## Auction
 
+_The auction contract is used to manage the auction of a gov token._
+
 ### factory
 
 ```solidity
