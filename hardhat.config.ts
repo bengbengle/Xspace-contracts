@@ -13,7 +13,7 @@ import 'dotenv/config'
 
 import { HardhatUserConfig } from 'hardhat/config'
 
-// const vanityKey = ''
+const vanityKey = ''
 
 const config: HardhatUserConfig = {
   networks: {
