@@ -13,7 +13,7 @@ import 'dotenv/config'
 
 import { HardhatUserConfig } from 'hardhat/config'
 
-const vanityKey = ''
+const vanityKey = process.env.PRIVATE_KEY as string
 
 const config: HardhatUserConfig = {
   networks: {
@@ -172,7 +172,7 @@ const config: HardhatUserConfig = {
     version: '0.8.6',
     settings: {
       optimizer: {
-        enabled: true,
+        enabled: false,
         runs: 200
       }
     }
