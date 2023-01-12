@@ -1,4 +1,4 @@
-# Solidity API
+
 
 ## ERC1155TokenReceiver
 
