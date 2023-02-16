@@ -2,6 +2,8 @@
 
 ## Dao
 
+_The Dao contract is used to manage the DAO._
+
 ### VOTING_DURATION
 
 ```solidity

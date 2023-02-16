@@ -47,6 +47,11 @@ contract Auction is ReentrancyGuard {
         _;
     }
 
+    /**
+        * @notice setup factory address
+        * @dev factory address is used to point to the factory contract
+        * @param _factory The address of the factory
+     */
     function setFactory(address _factory) external returns (bool) {
         require(
             factory == address(0), "Auction: factory address has already been set"
@@ -57,6 +62,12 @@ contract Auction is ReentrancyGuard {
         return true;
     }
 
+    /**
+        * @notice create new GovToken
+        * @dev create new GovToken
+        * @param _name The name of the GovToken
+        * @param _symbol The symbol of the GovToken
+     */
     function createGovToken(string memory _name, string memory _symbol)
         external
         nonReentrant
@@ -79,7 +90,13 @@ contract Auction is ReentrancyGuard {
         return true;
     }
 
-    // DAO can use this to create/enable/disable/changeCurrency/changeRate
+      /**
+        * @notice create a public offer
+        * @dev DAO can use this to create/enable/disable/changeCurrency/changeRate
+        * @param _isActive  true to enable, false to disable
+        * @param _currency  currency address
+        * @param _rate      rate
+     */
     function initPublicOffer(bool _isActive, address _currency, uint256 _rate) 
         external 
         onlyDaoWithGovToken 
@@ -94,6 +111,14 @@ contract Auction is ReentrancyGuard {
         return true;
     }
 
+    /**
+        * @notice create private offer with _recipient address
+        * @dev DAO can use this to create/enable/disable/changeCurrency/changeRate, isActive is default set true 
+        * @param _recipient recipient address
+        * @param _currency  currency address
+        * @param _currencyAmount currency amount
+        * @param _amount     amount
+     */
     function createPrivateOffer(address _recipient, address _currency, uint256 _currencyAmount, uint256 _amount) 
         external 
         onlyDaoWithGovToken 
@@ -112,6 +137,10 @@ contract Auction is ReentrancyGuard {
         return true;
     }
 
+    /**
+        * @notice disablePrivateOffer
+        * @param _id        offer id
+     */
     function disablePrivateOffer(uint256 _id)
         external
         onlyDaoWithGovToken
@@ -122,6 +151,12 @@ contract Auction is ReentrancyGuard {
         return true;
     }
 
+    /**
+        * @notice buy a public offer
+        * @dev only DAO can sell GovTokens
+        * @param _dao DAO address
+        * @param _amount amount
+     */
     function buyPublicOffer(address _dao, uint256 _amount)
         external
         nonReentrant
@@ -135,11 +170,7 @@ contract Auction is ReentrancyGuard {
 
         require(publicOffer.isActive, "Auction: this offer is disabled");
 
-        IERC20(publicOffer.currency).safeTransferFrom(
-            msg.sender,
-            _dao,
-            (_amount * publicOffer.rate) / 1e18
-        );
+        IERC20(publicOffer.currency).safeTransferFrom(msg.sender, _dao, (_amount * publicOffer.rate) / 1e18 );
 
         address govToken = IDao(_dao).govToken();
 
@@ -150,6 +181,12 @@ contract Auction is ReentrancyGuard {
         return true;
     }
 
+    /**
+        * @notice buy a private offer
+        * @dev only DAO can sell GovTokens
+        * @param _dao DAO address
+        * @param _id offer id
+     */
     function buyPrivateOffer(address _dao, uint256 _id)
         external
         nonReentrant

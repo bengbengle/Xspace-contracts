@@ -17,6 +17,11 @@ import "../interfaces/ERC721TokenReceiver.sol";
 import "../interfaces/ERC777TokensRecipient.sol";
 import "../interfaces/IERC165.sol";
 
+/**
+    *@title Dao
+    *@dev The Dao contract is used to manage the DAO.
+    
+    */
 contract Dao is ReentrancyGuard, ERC20, ERC1155TokenReceiver, ERC777TokensRecipient, ERC721TokenReceiver, IERC165 {
     using EnumerableSet for EnumerableSet.AddressSet;
     using SafeERC20 for IERC20;

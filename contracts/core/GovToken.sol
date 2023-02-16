@@ -8,7 +8,6 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import "../interfaces/IDao.sol";
 
-
 contract GovToken is ReentrancyGuard, ERC20, ERC20Permit {
     address public immutable dao;
 

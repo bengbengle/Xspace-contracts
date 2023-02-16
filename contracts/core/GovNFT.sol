@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 
 import "../interfaces/IDao.sol";
 
-contract MyToken is ERC721, ERC721Enumerable, Ownable {
+contract GovNFT is ERC721, ERC721Enumerable, Ownable {
     using Counters for Counters.Counter;
 
     Counters.Counter private _tokenIdCounter;
@@ -29,16 +29,18 @@ contract MyToken is ERC721, ERC721Enumerable, Ownable {
         dao = _dao;
         auction = msg.sender;
     }
+
     modifier onlyDao() {
         require(msg.sender == dao, "GovToken: caller is not the dao");
         _;
     }
-    // The following functions are overrides required by Solidity.
 
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId)
-        internal
-        override(ERC721, ERC721Enumerable)
-    {
+    // The following functions are overrides required by Solidity.
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 tokenId
+    ) internal override(ERC721, ERC721Enumerable) {
         super._beforeTokenTransfer(from, to, tokenId);
     }
 
@@ -51,22 +53,28 @@ contract MyToken is ERC721, ERC721Enumerable, Ownable {
         return super.supportsInterface(interfaceId);
     }
 
-     function mint(address _to) external onlyOwner returns (bool)
-    {
+    function mint(address _to) external onlyOwner returns (bool) {
         require(mintable, "GovToken: minting is disabled");
-        
+
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
         _safeMint(_to, tokenId);
         return true;
     }
-     function burn(uint256 _tokenId, address[] memory _tokens) 
-        external  
-        returns (bool) 
+
+    /**
+     * @notice burn a new token for the given tokenid
+     * @param _tokenId The tokenId of the token to burn
+     * @param _tokens The tokenids of tokens to burn
+     * @return true if the token was burned, false otherwise
+     */
+    function burn(uint256 _tokenId, address[] memory _tokens)
+        external
+        returns (bool)
     {
         require(burnable, "GovToken: burning is disabled");
         require(msg.sender != dao, "GovToken: DAO can't burn GovToken");
-        require(balanceOf(msg.sender) >=1, "GovToken: insufficient balance");
+        require(balanceOf(msg.sender) >= 1, "GovToken: insufficient balance");
         require(totalSupply() > 0, "GovToken: Zero share");
 
         uint256 _share = 1 / (totalSupply());
@@ -80,24 +88,41 @@ contract MyToken is ERC721, ERC721Enumerable, Ownable {
         return true;
     }
 
-    
+     /**
+     * @notice change the mintable status of the nft token
+     * @param _mintable The new mintable status
+     * @return true if the status was changed, false otherwise
+     */
     function changeMintable(bool _mintable) external onlyDao returns (bool) {
         require(!mintableStatusFrozen, "GovToken: minting status is frozen");
         mintable = _mintable;
         return true;
     }
 
+    /**
+     * @notice change the burnable status of the nft token
+     * @param _burnable The new burnable status
+     * @return true if the status was changed, false otherwise
+     */
     function changeBurnable(bool _burnable) external onlyDao returns (bool) {
         require(!burnableStatusFrozen, "GovToken: burnable status is frozen");
         burnable = _burnable;
         return true;
     }
 
+    /**
+     * @notice freeze the mintable status of the nft token
+     * @return true if the status was frozen, false otherwise
+     */
     function freezeMintingStatus() external onlyDao returns (bool) {
         mintableStatusFrozen = true;
         return true;
     }
 
+    /**
+     * @notice freeze the burnable status of the nft token
+     * @return true if the status was frozen, false otherwise
+     */
     function freezeBurningStatus() external onlyDao returns (bool) {
         burnableStatusFrozen = true;
         return true;
